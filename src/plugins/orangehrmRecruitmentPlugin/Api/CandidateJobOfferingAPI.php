@@ -19,10 +19,19 @@
 
 namespace OrangeHRM\Recruitment\Api;
 
+use OrangeHRM\Core\Api\V2\RequestParams;
+use OrangeHRM\Core\Api\V2\Validator\ParamRule;
+use OrangeHRM\Core\Api\V2\Validator\ParamRuleCollection;
+use OrangeHRM\Core\Api\V2\Validator\Rule;
+use OrangeHRM\Core\Api\V2\Validator\Rules;
+use OrangeHRM\Entity\CandidateVacancy;
 use OrangeHRM\Entity\WorkflowStateMachine;
 
 class CandidateJobOfferingAPI extends AbstractCandidateActionAPI
 {
+    public const PARAMETER_WORK_SHIFT_ID = 'workShiftId';
+    public const PARAMETER_WORK_SHIFT_WORKER_DECIDES = 'workShiftWorkerDecides';
+
     /**
      * @OA\Put(
      *     path="/api/v2/recruitment/candidates/{candidateId}/job/offer",
@@ -57,5 +66,78 @@ class CandidateJobOfferingAPI extends AbstractCandidateActionAPI
     public function getResultingState(): int
     {
         return WorkflowStateMachine::RECRUITMENT_APPLICATION_ACTION_OFFER_JOB;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getValidationRuleForUpdate(): ParamRuleCollection
+    {
+        $paramRuleCollection = parent::getValidationRuleForUpdate();
+        $paramRuleCollection->addParamValidation(
+            $this->getValidationDecorator()->notRequiredParamRule(
+                new ParamRule(
+                    self::PARAMETER_WORK_SHIFT_ID,
+                    new Rule(Rules::INT_TYPE)
+                ),
+                true
+            )
+        );
+        $paramRuleCollection->addParamValidation(
+            $this->getValidationDecorator()->notRequiredParamRule(
+                new ParamRule(
+                    self::PARAMETER_WORK_SHIFT_WORKER_DECIDES,
+                    new Rule(Rules::BOOL_TYPE)
+                ),
+                true
+            )
+        );
+        return $paramRuleCollection;
+    }
+
+    protected function afterCandidateAction(CandidateVacancy $candidateVacancy, ?\OrangeHRM\Entity\Employee $employee): void
+    {
+        $this->ensureInnerStudiosOfferTable();
+
+        $workerDecides = $this->getRequestParams()->getBooleanOrNull(
+            RequestParams::PARAM_TYPE_BODY,
+            self::PARAMETER_WORK_SHIFT_WORKER_DECIDES
+        ) ?? false;
+        $workShiftId = $this->getRequestParams()->getIntOrNull(
+            RequestParams::PARAM_TYPE_BODY,
+            self::PARAMETER_WORK_SHIFT_ID
+        );
+
+        if (!$workerDecides && is_null($workShiftId)) {
+            throw $this->getBadRequestException('Work shift is required');
+        }
+
+        $this->getEntityManager()->getConnection()->executeStatement(
+            'INSERT INTO ohrm_innerstudios_recruitment_offer
+                (candidate_id, work_shift_id, worker_decides, updated_at)
+             VALUES (:candidateId, :workShiftId, :workerDecides, NOW())
+             ON DUPLICATE KEY UPDATE
+                work_shift_id = VALUES(work_shift_id),
+                worker_decides = VALUES(worker_decides),
+                updated_at = NOW()',
+            [
+                'candidateId' => $candidateVacancy->getCandidate()->getId(),
+                'workShiftId' => $workerDecides ? null : $workShiftId,
+                'workerDecides' => $workerDecides ? 1 : 0,
+            ]
+        );
+    }
+
+    private function ensureInnerStudiosOfferTable(): void
+    {
+        $this->getEntityManager()->getConnection()->executeStatement(
+            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_offer (
+                candidate_id INT NOT NULL,
+                work_shift_id INT NULL,
+                worker_decides TINYINT(1) NOT NULL DEFAULT 0,
+                updated_at DATETIME NOT NULL,
+                PRIMARY KEY (candidate_id)
+            )'
+        );
     }
 }

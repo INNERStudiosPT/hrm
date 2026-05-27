@@ -49,7 +49,7 @@
       </oxd-grid-item>
       <oxd-grid-item>
         <oxd-text tag="p" class="orangehrm-about-text">
-          {{ data.productName }} {{ data.version }}
+          {{ data.productName }}
         </oxd-text>
       </oxd-grid-item>
       <template v-if="data.numberOfActiveEmployee !== undefined">

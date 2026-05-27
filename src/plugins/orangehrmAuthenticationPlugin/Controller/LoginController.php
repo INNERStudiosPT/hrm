@@ -20,6 +20,9 @@
 namespace OrangeHRM\Authentication\Controller;
 
 use OrangeHRM\Authentication\Auth\User as AuthUser;
+use OrangeHRM\Authentication\Exception\AuthenticationException;
+use OrangeHRM\Authentication\Service\AuthenticationService;
+use OrangeHRM\Authentication\Service\InnerStudiosSsoService;
 use OrangeHRM\Authentication\Traits\CsrfTokenManagerTrait;
 use OrangeHRM\Config\Config;
 use OrangeHRM\Core\Authorization\Service\HomePageService;
@@ -31,8 +34,12 @@ use OrangeHRM\Core\Vue\Component;
 use OrangeHRM\Core\Vue\Prop;
 use OrangeHRM\CorporateBranding\Traits\ThemeServiceTrait;
 use OrangeHRM\Entity\OpenIdProvider;
+use OrangeHRM\Entity\User;
+use OrangeHRM\Framework\Http\RedirectResponse;
 use OrangeHRM\Framework\Http\Request;
+use OrangeHRM\Framework\Http\Response;
 use OrangeHRM\OpenidAuthentication\Traits\Service\SocialMediaAuthenticationServiceTrait;
+use Throwable;
 
 class LoginController extends AbstractVueController implements PublicControllerInterface
 {
@@ -46,6 +53,8 @@ class LoginController extends AbstractVueController implements PublicControllerI
      * @var HomePageService|null
      */
     protected ?HomePageService $homePageService = null;
+    protected ?AuthenticationService $authenticationService = null;
+    protected ?InnerStudiosSsoService $innerStudiosSsoService = null;
 
     /**
      * @return HomePageService
@@ -56,6 +65,22 @@ class LoginController extends AbstractVueController implements PublicControllerI
             $this->homePageService = new HomePageService();
         }
         return $this->homePageService;
+    }
+
+    public function getAuthenticationService(): AuthenticationService
+    {
+        if (!$this->authenticationService instanceof AuthenticationService) {
+            $this->authenticationService = new AuthenticationService();
+        }
+        return $this->authenticationService;
+    }
+
+    public function getInnerStudiosSsoService(): InnerStudiosSsoService
+    {
+        if (!$this->innerStudiosSsoService instanceof InnerStudiosSsoService) {
+            $this->innerStudiosSsoService = new InnerStudiosSsoService();
+        }
+        return $this->innerStudiosSsoService;
     }
 
     /**
@@ -83,7 +108,7 @@ class LoginController extends AbstractVueController implements PublicControllerI
             )
         );
         $component->addProp(
-            new Prop('login-logo-src', Prop::TYPE_STRING, $request->getBasePath() . '/images/ohrm_logo.png')
+            new Prop('login-logo-src', Prop::TYPE_STRING, $request->getBasePath() . '/images/innerstudios-logo.png')
         );
         $component->addProp(
             new Prop('login-banner-src', Prop::TYPE_STRING, $this->getThemeService()->getLoginBannerURL($request))
@@ -116,7 +141,39 @@ class LoginController extends AbstractVueController implements PublicControllerI
             $homePagePath = $this->getHomePageService()->getHomePagePath();
             return $this->redirect($homePagePath);
         }
-        return parent::handle($request);
+
+        $profile = $this->getInnerStudiosSsoService()->getProfile($request);
+        if ($profile === null) {
+            return new RedirectResponse($this->getInnerStudiosLoginUrl($request));
+        }
+
+        $user = $this->getInnerStudiosSsoService()->findMatchingUser($profile);
+        if (!$user instanceof User) {
+            return new Response(
+                'Conta InnerStudios autenticada, mas sem utilizador correspondente no HRM. ' .
+                'Cria um utilizador OrangeHRM com o mesmo username do auth.innerstudios.pt.',
+                Response::HTTP_FORBIDDEN
+            );
+        }
+
+        try {
+            $success = $this->getAuthenticationService()->setCredentialsForUser($user);
+            $this->getAuthUser()->setIsAuthenticated($success);
+        } catch (AuthenticationException $e) {
+            return new Response($e->getMessage(), Response::HTTP_FORBIDDEN);
+        } catch (Throwable $e) {
+            return new Response('Unexpected error occurred', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        $homePagePath = $this->getHomePageService()->getHomePagePath();
+        return $this->redirect($homePagePath);
+    }
+
+    private function getInnerStudiosLoginUrl(Request $request): string
+    {
+        $baseUrl = 'https://hrm.innerstudios.pt' . $request->getBaseUrl();
+        $returnUrl = $baseUrl . '/auth/login';
+        return 'https://auth.innerstudios.pt/auth?redirect=' . rawurlencode($returnUrl);
     }
 
     /**

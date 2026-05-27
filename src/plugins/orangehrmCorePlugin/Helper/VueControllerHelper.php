@@ -218,7 +218,16 @@ class VueControllerHelper
     protected function getMenuItems(): array
     {
         try {
-            return $this->getMenuService()->getMenuItems($this->getRequest()->getBaseUrl());
+            $menuItems = $this->getMenuService()->getMenuItems($this->getRequest()->getBaseUrl());
+            if (str_starts_with($this->getRequest()->getPathInfo(), '/recruitment')) {
+                $menuItems[1][] = [
+                    'id' => 900002,
+                    'name' => 'Templates',
+                    'url' => $this->getRequest()->getBaseUrl() . '/recruitment/innerstudiosTemplates',
+                    'active' => $this->getRequest()->getPathInfo() === '/recruitment/innerstudiosTemplates',
+                ];
+            }
+            return $menuItems;
         } catch (ServiceException $e) {
         }
         return [[], []];

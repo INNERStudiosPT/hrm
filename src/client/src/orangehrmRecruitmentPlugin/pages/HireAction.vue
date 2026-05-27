@@ -28,6 +28,25 @@
       <oxd-form-row>
         <oxd-grid :cols="3">
           <oxd-grid-item class="--span-column-2">
+            <file-upload-input
+              v-model:newFile="signedDocument"
+              v-model:method="signedDocumentMethod"
+              label="Documento assinado"
+              button-label="Procurar"
+              :rules="rules.signedDocument"
+              url="innerstudios/hire-document"
+              hint="Contrato assinado por ambas as partes."
+              required
+            />
+            <a
+              class="innerstudios-template-link"
+              :href="templateDownloadUrl"
+              target="_blank"
+            >
+              Descarregar template
+            </a>
+          </oxd-grid-item>
+          <oxd-grid-item class="--span-column-2">
             <oxd-input-field
               v-model="note"
               :rules="rules.note"
@@ -53,7 +72,8 @@
 </template>
 
 <script>
-import {shouldNotExceedCharLength} from '@/core/util/validation/rules';
+import {required, shouldNotExceedCharLength} from '@/core/util/validation/rules';
+import FileUploadInput from '@/core/components/inputs/FileUploadInput';
 import CandidateActionLayout from '@/orangehrmRecruitmentPlugin/components/CandidateActionLayout';
 import {APIService} from '@/core/util/services/api.service';
 import {navigate} from '@/core/util/helper/navigation';
@@ -61,6 +81,7 @@ import {navigate} from '@/core/util/helper/navigation';
 export default {
   components: {
     'candidate-action-layout': CandidateActionLayout,
+    'file-upload-input': FileUploadInput,
   },
   props: {
     candidateId: {
@@ -83,7 +104,11 @@ export default {
     return {
       isLoading: false,
       note: null,
+      signedDocument: null,
+      signedDocumentMethod: 'replaceCurrent',
+      templateDownloadUrl: `${window.appGlobal.baseUrl}/innerstudios/recruitment/hire-template`,
       rules: {
+        signedDocument: [required],
         note: [shouldNotExceedCharLength(2000)],
       },
     };
@@ -96,6 +121,7 @@ export default {
           method: 'PUT',
           data: {
             note: this.note,
+            signedDocument: this.signedDocument,
           },
         })
         .then(() => {
@@ -111,3 +137,14 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.innerstudios-template-link {
+  display: inline-flex;
+  margin-top: 8px;
+  color: #ff7b1a;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+</style>

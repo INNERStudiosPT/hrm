@@ -561,15 +561,22 @@ class EmployeeAPI extends Endpoint implements CrudEndpoint
         $firstName = $this->getRequestParams()->getString(RequestParams::PARAM_TYPE_BODY, self::PARAMETER_FIRST_NAME);
         $middleName = $this->getRequestParams()->getString(RequestParams::PARAM_TYPE_BODY, self::PARAMETER_MIDDLE_NAME);
         $lastName = $this->getRequestParams()->getString(RequestParams::PARAM_TYPE_BODY, self::PARAMETER_LAST_NAME);
-        $employeeId = $this->getRequestParams()->getStringOrNull(
-            RequestParams::PARAM_TYPE_BODY,
-            self::PARAMETER_EMPLOYEE_ID
-        );
-
         $employee->setFirstName($firstName);
         $employee->setMiddleName($middleName);
         $employee->setLastName($lastName);
-        $employee->setEmployeeId($employeeId);
+        $employee->setEmployeeId($this->generateUniqueEmployeeId());
+    }
+
+    private function generateUniqueEmployeeId(): string
+    {
+        for ($attempt = 0; $attempt < 100; $attempt++) {
+            $employeeId = str_pad((string)random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+            if ($this->getEmployeeService()->isUniqueEmployeeId($employeeId)) {
+                return $employeeId;
+            }
+        }
+
+        throw new BadRequestException('Unable to generate a unique Employee ID');
     }
 
     /**

@@ -263,6 +263,28 @@ class UserDao extends BaseDao
     }
 
     /**
+     * @param string $email
+     * @return User|null
+     */
+    public function getUserByEmployeeEmail(string $email): ?User
+    {
+        $q = $this->createQueryBuilder(User::class, 'u');
+        $q->leftJoin('u.employee', 'e')
+            ->andWhere(
+                $q->expr()->orX(
+                    'e.workEmail = :email',
+                    'e.otherEmail = :email'
+                )
+            )
+            ->andWhere('u.deleted = :deleted')
+            ->setParameter('email', $email)
+            ->setParameter('deleted', false)
+            ->setMaxResults(1);
+
+        return $q->getQuery()->getOneOrNullResult();
+    }
+
+    /**
      * @return User|null
      */
     public function getDefaultAdminUser(): ?User

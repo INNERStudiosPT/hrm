@@ -22,6 +22,7 @@ namespace OrangeHRM\Authentication\Controller;
 use OrangeHRM\Core\Controller\AbstractController;
 use OrangeHRM\Core\Traits\ServiceContainerTrait;
 use OrangeHRM\Framework\Http\RedirectResponse;
+use OrangeHRM\Framework\Http\Request;
 use OrangeHRM\Framework\Http\Session\Session;
 use OrangeHRM\Framework\Services;
 
@@ -29,11 +30,12 @@ class LogoutController extends AbstractController
 {
     use ServiceContainerTrait;
 
-    public function handle(): RedirectResponse
+    public function handle(Request $request): RedirectResponse
     {
         /** @var Session $session */
         $session = $this->getContainer()->get(Services::SESSION);
         $session->invalidate();
-        return $this->redirect("auth/login");
+        $returnUrl = 'https://hrm.innerstudios.pt' . $request->getBaseUrl() . '/auth/login';
+        return new RedirectResponse('https://auth.innerstudios.pt/auth?redirect=' . rawurlencode($returnUrl));
     }
 }

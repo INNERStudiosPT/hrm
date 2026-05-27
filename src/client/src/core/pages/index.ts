@@ -20,6 +20,7 @@ import BadRequest from './BadRequest.vue';
 import ModuleUnderDevelopment from './ModuleUnderDevelopment.vue';
 import Disabled from './Disabled.vue';
 import TimeSheetPeriodNotDefined from './TimeSheetPeriodNotDefined.vue';
+import Notifications from './Notifications.vue';
 
 export default {
   'bad-request': BadRequest,
@@ -27,4 +28,5 @@ export default {
   'module-under-development': ModuleUnderDevelopment,
   'disabled-module': Disabled,
   'time-sheet-period-not-defined': TimeSheetPeriodNotDefined,
+  'innerstudios-notifications': Notifications,
 };

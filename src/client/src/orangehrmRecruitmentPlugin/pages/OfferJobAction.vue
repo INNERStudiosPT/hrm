@@ -27,6 +27,16 @@
     >
       <oxd-form-row>
         <oxd-grid :cols="3">
+          <oxd-grid-item>
+            <oxd-input-field
+              v-model="workShift"
+              type="select"
+              label="Work shift"
+              :options="workShiftOptions"
+              :rules="rules.workShift"
+              required
+            />
+          </oxd-grid-item>
           <oxd-grid-item class="--span-column-2">
             <oxd-input-field
               v-model="note"
@@ -53,7 +63,7 @@
 </template>
 
 <script>
-import {shouldNotExceedCharLength} from '@/core/util/validation/rules';
+import {required, shouldNotExceedCharLength} from '@/core/util/validation/rules';
 import CandidateActionLayout from '@/orangehrmRecruitmentPlugin/components/CandidateActionLayout';
 import {APIService} from '@/core/util/services/api.service';
 import {navigate} from '@/core/util/helper/navigation';
@@ -74,28 +84,61 @@ export default {
       window.appGlobal.baseUrl,
       `/api/v2/recruitment/candidates/${props.candidateId}/job/offer`,
     );
+    const httpWorkShifts = new APIService(
+      window.appGlobal.baseUrl,
+      '/api/v2/admin/work-shifts',
+    );
 
     return {
       http,
+      httpWorkShifts,
     };
   },
   data() {
     return {
       isLoading: false,
       note: null,
+      workShift: null,
+      workShiftOptions: [
+        {
+          id: 'worker_decides',
+          label: 'Decidido pelo trabalhador',
+        },
+      ],
       rules: {
+        workShift: [required],
         note: [shouldNotExceedCharLength(2000)],
       },
     };
   },
+  created() {
+    this.httpWorkShifts
+      .getAll({limit: 0})
+      .then((response) => {
+        const data = Array.isArray(response.data?.data) ? response.data.data : [];
+        this.workShiftOptions = [
+          ...data.map((item) => ({
+            id: item.id,
+            label: item.name,
+          })),
+          {
+            id: 'worker_decides',
+            label: 'Decidido pelo trabalhador',
+          },
+        ];
+      });
+  },
   methods: {
     onSave() {
       this.isLoading = true;
+      const workerDecides = this.workShift?.id === 'worker_decides';
       this.http
         .request({
           method: 'PUT',
           data: {
             note: this.note,
+            workShiftId: workerDecides ? null : this.workShift?.id,
+            workShiftWorkerDecides: workerDecides,
           },
         })
         .then(() => {

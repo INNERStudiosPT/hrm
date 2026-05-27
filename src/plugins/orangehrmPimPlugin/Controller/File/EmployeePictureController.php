@@ -19,20 +19,26 @@
 
 namespace OrangeHRM\Pim\Controller\File;
 
+use OrangeHRM\Authentication\Service\InnerStudiosSsoService;
 use OrangeHRM\Config\Config;
 use OrangeHRM\Core\Controller\AbstractFileController;
+use OrangeHRM\Core\Traits\Auth\AuthUserTrait;
 use OrangeHRM\Entity\EmpPicture;
 use OrangeHRM\Framework\Http\BinaryFileResponse;
+use OrangeHRM\Framework\Http\RedirectResponse;
 use OrangeHRM\Framework\Http\Request;
 use OrangeHRM\Framework\Http\Response;
 use OrangeHRM\Pim\Service\EmployeePictureService;
 
 class EmployeePictureController extends AbstractFileController
 {
+    use AuthUserTrait;
+
     /**
      * @var EmployeePictureService|null
      */
     protected ?EmployeePictureService $employeePictureService = null;
+    protected ?InnerStudiosSsoService $innerStudiosSsoService = null;
 
     /**
      * @return EmployeePictureService
@@ -45,14 +51,27 @@ class EmployeePictureController extends AbstractFileController
         return $this->employeePictureService;
     }
 
+    public function getInnerStudiosSsoService(): InnerStudiosSsoService
+    {
+        if (!$this->innerStudiosSsoService instanceof InnerStudiosSsoService) {
+            $this->innerStudiosSsoService = new InnerStudiosSsoService();
+        }
+        return $this->innerStudiosSsoService;
+    }
+
     /**
      * @param Request $request
-     * @return BinaryFileResponse|Response
+     * @return BinaryFileResponse|RedirectResponse|Response
      */
     public function handle(Request $request)
     {
         $empNumber = $request->attributes->get('empNumber');
         if (!is_null($empNumber)) {
+            $ssoAvatarUrl = $this->getSsoAvatarUrl($request, (int)$empNumber);
+            if ($ssoAvatarUrl !== null) {
+                return new RedirectResponse($ssoAvatarUrl);
+            }
+
             $response = $this->getResponse();
             $eTag = $this->getEmployeePictureService()->getEmpPictureETagByEmpNumber($empNumber);
 
@@ -75,6 +94,20 @@ class EmployeePictureController extends AbstractFileController
         $this->setCommonHeaders($response, "image/png");
         $response->isNotModified($request);
         return $response;
+    }
+
+    private function getSsoAvatarUrl(Request $request, int $empNumber): ?string
+    {
+        if ($this->getAuthUser()->getEmpNumber() !== $empNumber) {
+            return null;
+        }
+
+        $profile = $this->getInnerStudiosSsoService()->getProfile($request);
+        if (!is_array($profile)) {
+            return null;
+        }
+
+        return $this->getInnerStudiosSsoService()->getAvatarUrl($profile);
     }
 
     /**

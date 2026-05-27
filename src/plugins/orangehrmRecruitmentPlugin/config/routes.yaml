@@ -167,6 +167,21 @@ apiv2_recruitment_candidates_hire:
   defaults:
     _api: OrangeHRM\Recruitment\Api\CandidateHiringAPI
 
+innerstudios_recruitment_hire_template:
+  path: /innerstudios/recruitment/hire-template
+  controller: OrangeHRM\Recruitment\Controller\InnerStudiosHireTemplateController::handle
+  methods: [ GET ]
+
+innerstudios_recruitment_templates:
+  path: /recruitment/innerstudiosTemplates
+  controller: OrangeHRM\Recruitment\Controller\InnerStudiosRecruitmentTemplatesController::handle
+  methods: [ GET ]
+
+innerstudios_recruitment_templates_api:
+  path: /api/v2/innerstudios/recruitment/templates
+  controller: OrangeHRM\Recruitment\Controller\InnerStudiosRecruitmentTemplatesApiController::handle
+  methods: [ GET, POST ]
+
 apiv2_recruitment_candidates_history:
   path: /api/v2/recruitment/candidates/{candidateId}/history
   controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle

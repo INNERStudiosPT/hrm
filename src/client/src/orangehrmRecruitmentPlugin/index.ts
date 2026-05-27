@@ -33,6 +33,7 @@ import ViewActionHistory from './pages/ViewActionHistory.vue';
 import VacancyList from './pages/VacancyList.vue';
 import ApplyJobVacancy from './pages/ApplyJobVacancy.vue';
 import ViewInterviewAttachments from './pages/ViewInterviewAttachments.vue';
+import InnerStudiosRecruitmentTemplates from './pages/InnerStudiosRecruitmentTemplates.vue';
 
 export default {
   'view-job-vacancy': ViewJobVacancy,
@@ -53,4 +54,5 @@ export default {
   'vacancy-list': VacancyList,
   'apply-job-vacancy': ApplyJobVacancy,
   'view-interview-attachments': ViewInterviewAttachments,
+  'innerstudios-recruitment-templates': InnerStudiosRecruitmentTemplates,
 };

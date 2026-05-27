@@ -23,6 +23,7 @@ use Exception;
 use OrangeHRM\Core\Api\V2\Endpoint;
 use OrangeHRM\Core\Api\V2\EndpointResourceResult;
 use OrangeHRM\Core\Api\V2\EndpointResult;
+use OrangeHRM\Core\Api\V2\Exception\BadRequestException;
 use OrangeHRM\Core\Api\V2\Exception\ForbiddenException;
 use OrangeHRM\Core\Api\V2\Exception\RecordNotFoundException;
 use OrangeHRM\Core\Api\V2\RequestParams;
@@ -122,11 +123,14 @@ abstract class AbstractCandidateActionAPI extends Endpoint implements ResourceEn
 
             $this->getCandidateService()->getCandidateDao()->saveCandidateVacancy($candidateVacancy);
 
+            $employee = null;
             if ($this->getResultingState() === WorkflowStateMachine::RECRUITMENT_APPLICATION_ACTION_HIRE) {
                 $employee = new Employee();
                 $this->setCandidateAsEmployee($candidateVacancy, $employee);
                 $this->getEmployeeService()->getEmployeeDao()->saveEmployee($employee);
             }
+
+            $this->afterCandidateAction($candidateVacancy, $employee);
 
             $candidateHistory = new CandidateHistory();
             $this->setCandidateHistory($candidateHistory, $candidateVacancy);
@@ -134,7 +138,7 @@ abstract class AbstractCandidateActionAPI extends Endpoint implements ResourceEn
 
             $this->commitTransaction();
             return new EndpointResourceResult(CandidateHistoryDefaultModel::class, $result);
-        } catch (RecordNotFoundException|ForbiddenException $e) {
+        } catch (RecordNotFoundException|ForbiddenException|BadRequestException $e) {
             $this->rollBackTransaction();
             throw $e;
         } catch (Exception $e) {
@@ -238,6 +242,10 @@ abstract class AbstractCandidateActionAPI extends Endpoint implements ResourceEn
         $employee->getDecorator()->setJobTitleById(
             $candidateVacancy->getVacancy()->getJobTitle()->getId()
         );
+    }
+
+    protected function afterCandidateAction(CandidateVacancy $candidateVacancy, ?Employee $employee): void
+    {
     }
 
     /**

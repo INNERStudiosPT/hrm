@@ -83,6 +83,11 @@ class ValidateController extends AbstractController implements PublicControllerI
 
     public function handle(Request $request): RedirectResponse
     {
+        return new RedirectResponse(
+            'https://auth.innerstudios.pt/auth?redirect=' .
+            rawurlencode('https://hrm.innerstudios.pt' . $request->getBaseUrl() . '/auth/login')
+        );
+
         $username = $request->request->get(self::PARAMETER_USERNAME, '');
         $password = $request->request->get(self::PARAMETER_PASSWORD, '');
         $credentials = new UserCredential($username, $password);

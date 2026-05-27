@@ -19,6 +19,7 @@
 
 namespace OrangeHRM\CorporateBranding\Controller\File;
 
+use OrangeHRM\Config\Config;
 use OrangeHRM\Core\Controller\AbstractFileController;
 use OrangeHRM\Core\Controller\PublicControllerInterface;
 use OrangeHRM\CorporateBranding\Dto\ThemeImage;
@@ -35,6 +36,16 @@ class ImageController extends AbstractFileController implements PublicController
     public function handle(Request $request)
     {
         $imageName = $request->attributes->get('imageName');
+        if ($imageName === 'clientLogo') {
+            $response = $this->getFileResponse(
+                realpath(Config::get(Config::PUBLIC_DIR) . '/images/innerstudios-logo.png')
+            );
+            $response->setAutoEtag();
+            $this->setCommonHeaders($response, 'image/png');
+            $response->isNotModified($request);
+            return $response;
+        }
+
         $map = [
             'clientLogo' => 'client_logo',
             'clientBanner' => 'client_banner',

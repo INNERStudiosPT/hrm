@@ -46,16 +46,6 @@
                   />
                 </oxd-grid-item>
               </oxd-grid>
-
-              <oxd-grid :cols="2" class="orangehrm-full-width-grid">
-                <oxd-grid-item>
-                  <oxd-input-field
-                    v-model="employee.employeeId"
-                    :label="$t('general.employee_id')"
-                    :rules="rules.employeeId"
-                  />
-                </oxd-grid-item>
-              </oxd-grid>
             </oxd-form-row>
             <oxd-divider />
             <oxd-form-row class="user-form-header">
@@ -148,7 +138,6 @@ const employeeModel = {
   middleName: '',
   lastName: '',
   empPicture: null,
-  employeeId: '',
 };
 
 const userModel = {
@@ -184,10 +173,7 @@ export default {
   },
 
   setup(props) {
-    const employee = ref({
-      ...employeeModel,
-      employeeId: props.empId ? props.empId : '',
-    });
+    const employee = ref({...employeeModel});
 
     const http = new APIService(
       window.appGlobal.baseUrl,
@@ -195,11 +181,6 @@ export default {
     );
 
     const {createUniqueValidator} = useServerValidation(http);
-    const employeeIdUniqueValidation = createUniqueValidator(
-      'Employee',
-      'employeeId',
-      {translateKey: 'pim.employee_id_exists'},
-    );
     const usernameUniqueValidation = createUniqueValidator('User', 'userName', {
       matchByField: 'deleted',
       matchByValue: 'false',
@@ -209,7 +190,6 @@ export default {
     return {
       http,
       employee,
-      employeeIdUniqueValidation,
       usernameUniqueValidation,
     };
   },
@@ -224,10 +204,6 @@ export default {
         firstName: [required, shouldNotExceedCharLength(30)],
         middleName: [shouldNotExceedCharLength(30)],
         lastName: [required, shouldNotExceedCharLength(30)],
-        employeeId: [
-          this.employeeIdUniqueValidation,
-          shouldNotExceedCharLength(10),
-        ],
         empPicture: [
           maxFileSize(1024 * 1024),
           validFileTypes(this.allowedImageTypes),
