@@ -15,7 +15,7 @@ steps:
       - event: [push, pull_request]
     commands:
       - apt-get update
-      - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates php8.3-cli php8.3-mbstring php8.3-xml php8.3-curl php8.3-zip php8.3-intl git curl unzip
+      - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates php8.3-cli php8.3-mbstring php8.3-xml php8.3-curl php8.3-zip php8.3-intl php8.3-gd php8.3-ldap git curl unzip
       - |
         if ! command -v composer >/dev/null 2>&1; then
           curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
