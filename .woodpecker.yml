@@ -1,10 +1,3 @@
-services:
-  - name: docker
-    image: docker:27-dind
-    privileged: true
-    environment:
-      DOCKER_TLS_CERTDIR: ""
-
 steps:
   - name: lint-node
     image: node:20-bookworm
@@ -41,10 +34,8 @@ steps:
         fi
 
   - name: docker-build
-    image: docker:27
+    image: gcr.io/kaniko-project/executor:latest
     when:
       - event: [push, pull_request]
-    environment:
-      DOCKER_HOST: tcp://docker:2375
     commands:
-      - docker build . --file Dockerfile
+      - /kaniko/executor --context . --dockerfile Dockerfile --no-push
