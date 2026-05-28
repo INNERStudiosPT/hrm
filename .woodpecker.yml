@@ -34,7 +34,7 @@ steps:
         fi
 
   - name: docker-build
-    image: gcr.io/kaniko-project/executor:latest
+    image: gcr.io/kaniko-project/executor:debug
     when:
       - event: [push, pull_request]
     commands:
