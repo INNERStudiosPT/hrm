@@ -61,7 +61,11 @@ class CandidateShortlistingAPI extends AbstractCandidateActionAPI
 
     protected function afterCandidateAction(\OrangeHRM\Entity\CandidateVacancy $candidateVacancy, ?\OrangeHRM\Entity\Employee $employee): void
     {
-        $portalService = new \OrangeHRM\Recruitment\Service\InnerStudiosRecruitmentPortalService();
-        $portalService->sendInterviewScheduling($candidateVacancy);
+        try {
+            $portalService = new \OrangeHRM\Recruitment\Service\InnerStudiosRecruitmentPortalService();
+            $portalService->sendInterviewScheduling($candidateVacancy);
+        } catch (\Throwable $e) {
+            error_log('InnerStudios: sendInterviewScheduling failed: ' . $e->getMessage());
+        }
     }
 }

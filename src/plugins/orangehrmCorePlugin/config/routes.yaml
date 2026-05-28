@@ -18,6 +18,11 @@ apiv2_innerstudios_notifications:
   controller: OrangeHRM\Core\Controller\InnerStudiosNotificationsApiController::handle
   methods: [ GET ]
 
+apiv2_innerstudios_staff_awards:
+  path: /api/v2/innerstudios/staff-awards
+  controller: OrangeHRM\Core\Controller\InnerStudiosStaffAwardsApiController::handle
+  methods: [ GET ]
+
 innerstudios_notifications:
   path: /innerstudios/notifications
   controller: OrangeHRM\Core\Controller\InnerStudiosNotificationsController::handle

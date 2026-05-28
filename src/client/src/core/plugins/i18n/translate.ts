@@ -36,6 +36,7 @@ export interface LanguageResponse {
 export interface LanguageOptions {
   baseUrl: string;
   resourceUrl: string;
+  locale?: string;
 }
 
 export type TranslateAPI = (
@@ -83,14 +84,55 @@ const defineMixin = (): ComponentOptions => {
   };
 };
 
+const normalizeLocale = (raw: string | null | undefined): string | null => {
+  if (!raw) return null;
+  const trimmed = String(raw).trim();
+  if (!trimmed) return null;
+
+  // Accept common browser / HTML formats like "pt-PT" and normalize to backend codes like "pt_PT".
+  const parts = trimmed.replace('-', '_').split('_').filter(Boolean);
+  if (parts.length === 0) return null;
+
+  const language = parts[0].toLowerCase();
+  if (parts.length === 1) {
+    // Project convention: Portuguese defaults to Portugal if not specified.
+    if (language === 'pt') return 'pt_PT';
+    return language;
+  }
+
+  const region = parts[1].toUpperCase();
+  return `${language}_${region}`;
+};
+
 function createI18n(options: LanguageOptions) {
   const http = new APIService(options.baseUrl, options.resourceUrl);
   return {
     init: function () {
       return new Promise<void>((resolve) => {
+        const preferredLocale =
+          normalizeLocale(options.locale) ??
+          normalizeLocale(document?.documentElement?.lang) ??
+          normalizeLocale(navigator?.language) ??
+          null;
+
+        const requestOnce = (locale: string | null) => {
+          return http.request({
+            method: 'GET',
+            params: locale ? {locale} : undefined,
+            headers: {
+              Accept: 'application/json',
+              contentType: 'application/json',
+              ...(process.env.NODE_ENV === 'development' && {
+                'Cache-Control': 'public,  max-age=60',
+              }),
+            },
+          });
+        };
+
         http
           .request({
             method: 'GET',
+            params: preferredLocale ? {locale: preferredLocale} : undefined,
             headers: {
               Accept: 'application/json',
               contentType: 'application/json',
@@ -115,6 +157,27 @@ function createI18n(options: LanguageOptions) {
             StoreService.mergeConfig({
               language,
             });
+          })
+          .catch(() => {
+            // If preferred locale isn't supported by backend, retry without locale
+            // so we at least get a complete message set (instead of falling back to keys).
+            if (!preferredLocale) return;
+            return requestOnce(null)
+              .then((response: AxiosResponse<LanguageResponse>) => {
+                const {data} = response;
+                const language: {[key: string]: string} = {};
+                for (const key in data) {
+                  language[key] = data[key].target || data[key].source;
+                  langStrings[key] = new IntlMessageFormat(
+                    data[key].target || data[key].source,
+                    undefined,
+                    undefined,
+                    {ignoreTag: true},
+                  );
+                }
+                StoreService.mergeConfig({language});
+              })
+              .catch(() => undefined);
           })
           .finally(() => resolve());
       });

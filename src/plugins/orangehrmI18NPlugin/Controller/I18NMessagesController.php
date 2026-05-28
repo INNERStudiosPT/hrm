@@ -27,6 +27,7 @@ use OrangeHRM\Framework\Http\Request;
 use OrangeHRM\Framework\Http\Response;
 use OrangeHRM\Framework\Services;
 use OrangeHRM\I18N\Service\I18NService;
+use InvalidArgumentException;
 
 class I18NMessagesController extends AbstractFileController implements PublicControllerInterface
 {
@@ -46,20 +47,62 @@ class I18NMessagesController extends AbstractFileController implements PublicCon
      */
     public function handle(Request $request): Response
     {
-        $locale = $request->query->get('locale');
-        if (!$request->query->has('locale')) {
+        $requestedLocale = $request->query->has('locale') ? $request->query->get('locale') : null;
+        $locale = $this->normalizeLocale($requestedLocale);
+        if (!is_string($locale) || trim($locale) === '') {
             $locale = $this->getConfigService()->getAdminLocalizationDefaultLanguage();
         }
 
         $response = $this->getResponse();
-        $response->setEtag($this->getI18NService()->getETagByLangCode($locale));
+        try {
+            $response->setEtag($this->getI18NService()->getETagByLangCode($locale));
+        } catch (InvalidArgumentException $e) {
+            $locale = $this->getConfigService()->getAdminLocalizationDefaultLanguage();
+            $response->setEtag($this->getI18NService()->getETagByLangCode($locale));
+        }
 
         if (!$response->isNotModified($request)) {
-            $response->setContent($this->getI18NService()->getTranslationMessagesAsJsonString($locale));
+            try {
+                $response->setContent($this->getI18NService()->getTranslationMessagesAsJsonString($locale));
+            } catch (InvalidArgumentException $e) {
+                $fallbackLocale = $this->getConfigService()->getAdminLocalizationDefaultLanguage();
+                $response->setContent($this->getI18NService()->getTranslationMessagesAsJsonString($fallbackLocale));
+            }
             $this->setCommonHeaders($response, 'application/json');
         }
 
         return $response;
+    }
+
+    /**
+     * Accept common locale formats like "pt-PT" and normalize to "pt_PT".
+     * Returns null if input is empty/invalid.
+     *
+     * @param mixed $locale
+     */
+    private function normalizeLocale($locale): ?string
+    {
+        if (!is_string($locale)) {
+            return null;
+        }
+        $locale = trim($locale);
+        if ($locale === '') {
+            return null;
+        }
+
+        $locale = str_replace('-', '_', $locale);
+        $parts = array_values(array_filter(explode('_', $locale)));
+        if (count($parts) === 0) {
+            return null;
+        }
+
+        $lang = strtolower($parts[0]);
+        if (count($parts) === 1) {
+            // Convention: "pt" defaults to Portugal.
+            return $lang === 'pt' ? 'pt_PT' : $lang;
+        }
+
+        return $lang . '_' . strtoupper($parts[1]);
     }
 
     private function setCommonHeaders($response, string $contentType)
