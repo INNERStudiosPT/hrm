@@ -18,7 +18,8 @@ else
     git remote set-url origin "https://github.com/INNERStudiosPT/hrm.git" || true
 fi
 
-git pull origin main
+git fetch origin main
+git reset --hard FETCH_HEAD
 git remote set-url origin "https://github.com/INNERStudiosPT/hrm.git" || true
 
 echo "🏗️ Step 2: Rebuilding and restarting hrm-web container..."
