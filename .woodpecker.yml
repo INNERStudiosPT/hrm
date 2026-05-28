@@ -54,7 +54,7 @@ steps:
       GITHUB_TOKEN:
         from_secret: github_token
     commands:
-      - apk add --no-cache docker-cli docker-compose bash
+      - apk add --no-cache docker-cli docker-compose bash git
       - cd /app
       - chmod +x ./deploy.sh
       - ./deploy.sh
