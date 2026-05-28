@@ -51,6 +51,7 @@ steps:
       - /var/run/docker.sock:/var/run/docker.sock
       - /home/fivem/apps/hrm:/app
     environment:
+      COMPOSE_PROJECT_NAME: hrm
       GITHUB_TOKEN:
         from_secret: github_token
     commands:
