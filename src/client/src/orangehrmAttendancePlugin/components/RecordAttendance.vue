@@ -18,7 +18,28 @@
  -->
 
 <template>
-  <oxd-form :loading="isLoading" @submit-valid="onSave">
+  <div v-if="isForcedBreakActive" class="orangehrm-forced-break-container">
+    <div class="orangehrm-forced-break-title">
+      <svg xmlns="http://www.w3.org/2000/svg" style="width: 1.5rem; height: 1.5rem; display: inline-block; vertical-align: middle; margin-right: 0.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      Descanso Obrigatório de 1 Hora
+    </div>
+    <div class="orangehrm-forced-break-desc">
+      Atingiu o limite de <strong>4 horas e 30 minutos</strong> de trabalho contínuo. Por motivos de segurança e saúde laboral, é obrigatório realizar uma pausa de 1 hora antes de iniciar o próximo turno.
+    </div>
+    
+    <div class="orangehrm-timer-card">
+      <div class="orangehrm-timer-text">
+        {{ cooldownTimerString }}
+      </div>
+      <span class="orangehrm-timer-caption">
+        Tempo restante até poder iniciar um novo turno
+      </span>
+    </div>
+  </div>
+
+  <oxd-form v-else :loading="isLoading" @submit-valid="onSave">
     <oxd-form-row>
       <oxd-grid :cols="4" class="orangehrm-full-width-grid">
         <template v-if="attendanceRecord.previousRecord">
@@ -199,6 +220,11 @@ export default {
         note: [shouldNotExceedCharLength(250)],
       },
       previousRecordTimezone: null,
+      latestRecord: null,
+      isForcedBreakActive: false,
+      cooldownEndTime: null,
+      cooldownTimerString: '00:00:00',
+      cooldownInterval: null,
     };
   },
   computed: {
@@ -245,15 +271,16 @@ export default {
         if (this.employeeId) {
           url = `/api/v2/attendance/records/latest?empNumber=${this.employeeId}`;
         }
-        return this.attendanceRecordId
-          ? this.http.request({method: 'GET', url})
-          : null;
+        return this.http.request({method: 'GET', url});
       })
 
       .then((response) => {
-        if (response) {
+        if (response && response.data && response.data.data) {
           const {data} = response.data;
+          this.latestRecord = data;
           this.attendanceRecord.previousRecord = data.punchIn;
+          
+          this.checkForForcedBreak();
         }
       })
       .then(() => {
@@ -265,7 +292,112 @@ export default {
         this.isLoading = false;
       });
   },
+  beforeUnmount() {
+    if (this.cooldownInterval) {
+      clearInterval(this.cooldownInterval);
+    }
+  },
+  beforeDestroy() {
+    if (this.cooldownInterval) {
+      clearInterval(this.cooldownInterval);
+    }
+  },
   methods: {
+    checkForForcedBreak() {
+      if (!this.latestRecord || !this.latestRecord.punchIn) return;
+      
+      const punchIn = this.latestRecord.punchIn;
+      const punchOut = this.latestRecord.punchOut;
+      
+      const punchInTime = new Date(`${punchIn.utcDate}T${punchIn.utcTime}Z`);
+      const now = new Date();
+      
+      if (!punchOut) {
+        const elapsedMs = now.getTime() - punchInTime.getTime();
+        const maxShiftMs = 4.5 * 60 * 60 * 1000;
+        
+        if (elapsedMs >= maxShiftMs) {
+          this.isForcedBreakActive = true;
+          this.cooldownEndTime = new Date(punchInTime.getTime() + maxShiftMs + 1 * 60 * 60 * 1000);
+          this.autoPunchOut(punchIn, maxShiftMs);
+        } else {
+          const remainingMs = maxShiftMs - elapsedMs;
+          setTimeout(() => {
+            this.checkForForcedBreak();
+          }, remainingMs);
+        }
+      } else {
+        const punchOutTime = new Date(`${punchOut.utcDate}T${punchOut.utcTime}Z`);
+        const shiftDurationMs = punchOutTime.getTime() - punchInTime.getTime();
+        const limitMs = 4.5 * 60 * 60 * 1000 - 60000;
+        
+        if (shiftDurationMs >= limitMs) {
+          const cooldownEnd = new Date(punchOutTime.getTime() + 1 * 60 * 60 * 1000);
+          if (now.getTime() < cooldownEnd.getTime()) {
+            this.isForcedBreakActive = true;
+            this.cooldownEndTime = cooldownEnd;
+            this.startCooldownTimer();
+          }
+        }
+      }
+    },
+    autoPunchOut(punchIn, maxShiftMs) {
+      const punchInTime = new Date(`${punchIn.utcDate}T${punchIn.utcTime}Z`);
+      const exactOutTime = new Date(punchInTime.getTime() + maxShiftMs);
+      const timezone = guessTimezone();
+      
+      this.isLoading = true;
+      this.http
+        .request({
+          method: 'PUT',
+          data: {
+            date: formatDate(exactOutTime, 'yyyy-MM-dd'),
+            time: formatDate(exactOutTime, 'HH:mm'),
+            note: 'Forçado a parar (limite de 4h30m atingido)',
+            timezoneOffset: timezone.offset,
+            timezoneName: timezone.name,
+          },
+        })
+        .then(() => {
+          this.isForcedBreakActive = true;
+          this.cooldownEndTime = new Date(exactOutTime.getTime() + 1 * 60 * 60 * 1000);
+          this.startCooldownTimer();
+        })
+        .catch((err) => {
+          console.error('[RecordAttendance] Forced punch out failed:', err);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
+    startCooldownTimer() {
+      if (this.cooldownInterval) {
+        clearInterval(this.cooldownInterval);
+      }
+      
+      const updateTimer = () => {
+        const now = new Date().getTime();
+        const distance = this.cooldownEndTime.getTime() - now;
+        
+        if (distance <= 0) {
+          clearInterval(this.cooldownInterval);
+          this.isForcedBreakActive = false;
+          this.cooldownTimerString = '00:00:00';
+          reloadPage();
+          return;
+        }
+        
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        const pad = (num) => String(num).padStart(2, '0');
+        this.cooldownTimerString = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      };
+      
+      updateTimer();
+      this.cooldownInterval = setInterval(updateTimer, 1000);
+    },
     onSave() {
       this.isLoading = true;
 
@@ -356,3 +488,62 @@ export default {
 </script>
 
 <style src="./record-attendance.scss" lang="scss" scoped></style>
+
+<style scoped>
+.orangehrm-forced-break-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  border: 2px dashed #f59e0b;
+  border-radius: 1rem;
+  background-color: rgba(245, 158, 11, 0.05);
+  margin: 1.5rem 0;
+  font-family: 'Outfit', 'Inter', sans-serif;
+}
+.orangehrm-forced-break-title {
+  color: #d97706;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.orangehrm-forced-break-desc {
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  max-width: 28rem;
+  margin-bottom: 1.5rem;
+}
+.orangehrm-timer-card {
+  padding: 1.5rem 2.5rem;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  max-width: 24rem;
+  margin: 0 auto;
+}
+.orangehrm-timer-text {
+  font-family: monospace;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #d97706;
+  letter-spacing: 0.1em;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.orangehrm-timer-caption {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.5rem;
+  display: block;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .7; }
+}
+</style>
