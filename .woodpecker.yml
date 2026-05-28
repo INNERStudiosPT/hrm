@@ -58,6 +58,14 @@ steps:
       - apk add --no-cache docker-cli docker-compose bash git
       - git config --global --add safe.directory /app
       - cd /app
+      - |
+        if [ -n "$GITHUB_TOKEN" ]; then
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/INNERStudiosPT/hrm.git"
+        fi
+      - git fetch origin main
+      - git reset --hard origin/main
+      - git clean -fd
+      - git remote set-url origin "https://github.com/INNERStudiosPT/hrm.git"
       - chmod +x ./deploy.sh
       - ./deploy.sh
 
