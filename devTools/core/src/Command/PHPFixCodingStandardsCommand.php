@@ -67,6 +67,7 @@ class PHPFixCodingStandardsCommand extends Command
             [$input->getOption('php'), './devTools/core/vendor/bin/php-cs-fixer', 'fix', '--format=json'],
             realpath(__DIR__ . '/../../../../')
         );
+        $process->setTimeout(300);
         try {
             $process->mustRun();
 
