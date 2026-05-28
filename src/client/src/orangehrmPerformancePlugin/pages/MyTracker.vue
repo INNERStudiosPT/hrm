@@ -20,41 +20,161 @@
 
 <template>
   <div class="orangehrm-background-container">
-    <!-- Premium Glassmorphic KPI Cards -->
-    <div v-if="kpiData" class="innerstudios-kpi-container">
-      <div class="innerstudios-kpi-card --referrals">
-        <div class="innerstudios-kpi-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-          </svg>
+    <!-- Premium Glassmorphic Performance Dashboard -->
+    <div v-if="kpiData" class="innerstudios-dashboard">
+      <oxd-text tag="h5" class="innerstudios-dashboard-title">
+        Painel de Performance & KPIs
+      </oxd-text>
+
+      <!-- Grid for Key Metrics -->
+      <div class="innerstudios-kpi-grid">
+        <!-- Card: Turnos e Assiduidade -->
+        <div class="innerstudios-dash-card">
+          <div class="innerstudios-card-header">
+            <svg class="icon --orange" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h6>Turnos e Horas</h6>
+          </div>
+          <div class="innerstudios-card-body">
+            <div class="kpi-row">
+              <span class="label">Horas Realizadas</span>
+              <span class="value --orange">{{ kpiData.hours_done }}h</span>
+            </div>
+            <div class="kpi-row">
+              <span class="label">Turnos Efetuados</span>
+              <span class="value">{{ kpiData.total_shifts }}</span>
+            </div>
+            <div class="kpi-row">
+              <span class="label">Duração Média</span>
+              <span class="value">{{ kpiData.avg_shift_length }}h</span>
+            </div>
+            <div class="kpi-row">
+              <span class="label">Conformidade de Descanso</span>
+              <span class="value" :class="kpiData.rest_compliance_score === 100 ? 'text-success' : 'text-warning'">
+                {{ kpiData.rest_compliance_score }}%
+              </span>
+            </div>
+          </div>
         </div>
-        <div class="innerstudios-kpi-info">
-          <span class="innerstudios-kpi-value">{{ kpiData.referrals }}</span>
-          <span class="innerstudios-kpi-label">Convites Realizados</span>
+
+        <!-- Card: Tarefas e Produtividade -->
+        <div class="innerstudios-dash-card">
+          <div class="innerstudios-card-header">
+            <svg class="icon --purple" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <h6>Tarefas e Produtividade</h6>
+          </div>
+          <div class="innerstudios-card-body">
+            <div class="kpi-row">
+              <span class="label">Concluídas</span>
+              <span class="value --purple">{{ kpiData.completed_tasks }}</span>
+            </div>
+            <div class="kpi-row">
+              <span class="label">Pendente (Backlog)</span>
+              <span class="value">{{ kpiData.active_backlog }}</span>
+            </div>
+            <div class="kpi-row">
+              <span class="label">Taxa de Prazo (On-Time)</span>
+              <span class="value">{{ kpiData.on_time_rate }}%</span>
+            </div>
+            <div class="kpi-row">
+              <span class="label">Velocidade (Média)</span>
+              <span class="value">
+                {{ kpiData.resolution_velocity.High || kpiData.resolution_velocity.Medium || kpiData.resolution_velocity['3'] || kpiData.resolution_velocity['2'] || '0' }}h / tarefa
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Crescimento & Referrals -->
+        <div class="innerstudios-dash-card">
+          <div class="innerstudios-card-header">
+            <svg class="icon --teal" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            <h6>Crescimento & Convites</h6>
+          </div>
+          <div class="innerstudios-card-body">
+            <div class="kpi-row">
+              <span class="label">Convites Realizados</span>
+              <span class="value --teal">{{ kpiData.referrals }}</span>
+            </div>
+            <div class="kpi-row">
+              <span class="label">Contratados (Hired)</span>
+              <span class="value">{{ kpiData.referrals_hired }}</span>
+            </div>
+            <div class="kpi-row">
+              <span class="label">Taxa de Conversão</span>
+              <span class="value">{{ kpiData.referrals_conversion_rate }}%</span>
+            </div>
+            <div class="kpi-row">
+              <span class="label">Triagem / Pipeline</span>
+              <span class="value">{{ kpiData.referral_stages.pending || kpiData.referral_stages.interview || 0 }} ativas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Alocação de Tempo & Projetos -->
+        <div class="innerstudios-dash-card">
+          <div class="innerstudios-card-header">
+            <svg class="icon --indigo" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+            </svg>
+            <h6>Projetos & Utilização</h6>
+          </div>
+          <div class="innerstudios-card-body">
+            <div class="kpi-row">
+              <span class="label">Utilização (InnerFX)</span>
+              <span class="value --indigo">{{ kpiData.utility_rate }}%</span>
+            </div>
+            
+            <div class="projects-list">
+              <div v-for="proj in kpiData.projects_distribution" :key="proj.name" class="proj-item">
+                <div class="proj-info">
+                  <span class="proj-name">{{ proj.name }}</span>
+                  <span class="proj-hours">{{ proj.hours }}h</span>
+                </div>
+                <div class="proj-progress-bar">
+                  <div class="bar-fill" :style="{ width: calcProjPercent(proj.hours) + '%' }"></div>
+                </div>
+              </div>
+              <div v-if="!kpiData.projects_distribution || kpiData.projects_distribution.length === 0" class="text-muted text-center pt-2">
+                Nenhum tempo alocado em projetos.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="innerstudios-kpi-card --tasks">
-        <div class="innerstudios-kpi-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-          </svg>
-        </div>
-        <div class="innerstudios-kpi-info">
-          <span class="innerstudios-kpi-value">{{ kpiData.completed_tasks }}</span>
-          <span class="innerstudios-kpi-label">Tarefas Concluídas</span>
-        </div>
-      </div>
-
-      <div class="innerstudios-kpi-card --hours">
-        <div class="innerstudios-kpi-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <div class="innerstudios-kpi-info">
-          <span class="innerstudios-kpi-value">{{ kpiData.hours_done }}h</span>
-          <span class="innerstudios-kpi-label">Horas de Turno</span>
+      <!-- Bottom Row: Wellbeing -->
+      <div class="innerstudios-dashboard-bottom">
+        <div class="wellbeing-banner">
+          <div class="wellbeing-info">
+            <svg class="icon --green" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            <div class="wellbeing-text">
+              <h6>Equilíbrio Laboral & Descanso</h6>
+              <p>Goza as suas férias e folgas regularmente para manter uma excelente saúde física e mental.</p>
+            </div>
+          </div>
+          <div class="wellbeing-metrics">
+            <div class="wellbeing-metric-card">
+              <span class="val">{{ kpiData.leaves_taken }} dias</span>
+              <span class="lbl">Férias Gozadas</span>
+            </div>
+            <div class="wellbeing-metric-card">
+              <span class="val">{{ kpiData.leaves_entitled }} dias</span>
+              <span class="lbl">Férias Atribuídas</span>
+            </div>
+            <div class="wellbeing-metric-card">
+              <span class="val">{{ kpiData.leave_burn_rate }}%</span>
+              <span class="lbl">Taxa de Queima</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -250,130 +370,224 @@ export default {
         id: item.id,
       });
     },
+    calcProjPercent(hours) {
+      if (!this.kpiData || !this.kpiData.projects_distribution) return 0;
+      const total = this.kpiData.projects_distribution.reduce((acc, curr) => acc + curr.hours, 0);
+      return total > 0 ? (hours / total * 100) : 0;
+    }
   },
 };
 </script>
 
 <style scoped>
-.innerstudios-kpi-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+.innerstudios-dashboard {
+  margin-bottom: 2.5rem;
   font-family: 'Outfit', 'Inter', sans-serif;
 }
 
-.innerstudios-kpi-card {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 1.5rem 1.75rem;
-  border-radius: 1.25rem;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.innerstudios-kpi-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
-  z-index: 1;
-  pointer-events: none;
-}
-
-.innerstudios-kpi-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.08);
-}
-
-.innerstudios-kpi-card.--referrals:hover {
-  border-color: rgba(255, 123, 26, 0.4);
-  box-shadow: 0 12px 40px 0 rgba(255, 123, 26, 0.1);
-}
-
-.innerstudios-kpi-card.--tasks:hover {
-  border-color: rgba(139, 92, 246, 0.4);
-  box-shadow: 0 12px 40px 0 rgba(139, 92, 246, 0.1);
-}
-
-.innerstudios-kpi-card.--hours:hover {
-  border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: 0 12px 40px 0 rgba(16, 185, 129, 0.1);
-}
-
-.innerstudios-kpi-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3.25rem;
-  height: 3.25rem;
-  border-radius: 1rem;
-  z-index: 2;
-  transition: transform 0.3s ease;
-}
-
-.innerstudios-kpi-card:hover .innerstudios-kpi-icon {
-  transform: scale(1.1);
-}
-
-.--referrals .innerstudios-kpi-icon {
-  background: rgba(255, 123, 26, 0.1);
-  color: #ff7b1a;
-}
-
-.--tasks .innerstudios-kpi-icon {
-  background: rgba(139, 92, 246, 0.1);
-  color: #8b5cf6;
-}
-
-.--hours .innerstudios-kpi-icon {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-}
-
-.innerstudios-kpi-icon svg {
-  width: 1.75rem;
-  height: 1.75rem;
-}
-
-.innerstudios-kpi-info {
-  display: flex;
-  flex-direction: column;
-  z-index: 2;
-}
-
-.innerstudios-kpi-value {
-  font-size: 1.75rem;
+.innerstudios-dashboard-title {
+  font-size: 1.5rem;
   font-weight: 800;
-  line-height: 1.2;
   color: #1f2937;
+  margin-bottom: 1.5rem;
   letter-spacing: -0.02em;
 }
 
-.--referrals .innerstudios-kpi-value {
-  color: #e06000;
+.innerstudios-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.--tasks .innerstudios-kpi-value {
-  color: #7c3aed;
+.innerstudios-dash-card {
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 10px 30px 0 rgba(31, 38, 135, 0.04);
+  padding: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
 }
 
-.--hours .innerstudios-kpi-value {
-  color: #059669;
+.innerstudios-dash-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px 0 rgba(31, 38, 135, 0.08);
 }
 
-.innerstudios-kpi-label {
-  font-size: 0.75rem;
+.innerstudios-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 0.75rem;
+}
+
+.innerstudios-card-header h6 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #374151;
+  margin: 0;
+}
+
+.innerstudios-card-header .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon.--orange { color: #ff7b1a; }
+.icon.--purple { color: #8b5cf6; }
+.icon.--teal { color: #14b8a6; }
+.icon.--indigo { color: #6366f1; }
+.icon.--green { color: #10b981; }
+
+.innerstudios-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  flex: 1;
+}
+
+.kpi-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kpi-row .label {
+  font-size: 0.825rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.kpi-row .value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.kpi-row .value.--orange { color: #e06000; }
+.kpi-row .value.--purple { color: #7c3aed; }
+.kpi-row .value.--teal { color: #0f766e; }
+.kpi-row .value.--indigo { color: #4338ca; }
+
+.text-success { color: #10b981 !important; font-weight: 700; }
+.text-warning { color: #f59e0b !important; font-weight: 700; }
+.text-muted { color: #9ca3af !important; }
+.text-center { text-align: center; }
+.pt-2 { padding-top: 0.5rem; }
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.proj-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.proj-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.proj-progress-bar {
+  height: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
+  border-radius: 99px;
+  transition: width 0.8s ease;
+}
+
+/* Wellbeing Banner styling */
+.innerstudios-dashboard-bottom {
+  margin-top: 1.5rem;
+}
+
+.wellbeing-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.04) 0%, rgba(5, 150, 105, 0.08) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.wellbeing-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 32rem;
+}
+
+.wellbeing-info .icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+}
+
+.wellbeing-text h6 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #065f46;
+  margin: 0 0 0.25rem 0;
+}
+
+.wellbeing-text p {
+  font-size: 0.825rem;
+  color: #374151;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.wellbeing-metrics {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.wellbeing-metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 0.875rem;
+  min-width: 6.5rem;
+}
+
+.wellbeing-metric-card .val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #047857;
+}
+
+.wellbeing-metric-card .lbl {
+  font-size: 0.675rem;
   font-weight: 600;
   color: #6b7280;
   text-transform: uppercase;

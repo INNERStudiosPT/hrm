@@ -34,6 +34,8 @@
       <oxd-grid-item v-for="(post, index) in posts" :key="post">
         <post-container
           :post="post"
+          :award-week="weekWinnerEmpNumber !== null && post.employee && post.employee.empNumber === weekWinnerEmpNumber"
+          :award-month="monthWinnerEmpNumber !== null && post.employee && post.employee.empNumber === monthWinnerEmpNumber"
           @edit="onEdit(index)"
           @delete="onDelete(index)"
         >
@@ -186,6 +188,25 @@ export default {
       photoCarouselState: null,
     });
 
+    // Staff awards — track current winner emp_numbers for badge display
+    const weekWinnerEmpNumber = ref(null);
+    const monthWinnerEmpNumber = ref(null);
+
+    const fetchAwards = async () => {
+      try {
+        const res = await fetch('https://api.innerstudios.pt/v1/public/staff-awards', {
+          headers: {Accept: 'application/json'},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          weekWinnerEmpNumber.value = data.week?.emp_number ?? null;
+          monthWinnerEmpNumber.value = data.month?.emp_number ?? null;
+        }
+      } catch (e) {
+        // Awards are non-critical; silently ignore network errors
+      }
+    };
+
     const fetchData = () => {
       state.isLoading = true;
       fetchPosts(POST_LIMIT, state.offset, 'DESC', props.sortField)
@@ -293,7 +314,10 @@ export default {
       state.posts[index].stats.numOfComments--;
     };
 
-    onBeforeMount(() => fetchData());
+    onBeforeMount(() => {
+      fetchData();
+      fetchAwards();
+    });
 
     watch(
       () => props.sortField,
@@ -319,6 +343,8 @@ export default {
       onCloseEditModal,
       onCloseShareModal,
       onClosePhotoCarousel,
+      weekWinnerEmpNumber,
+      monthWinnerEmpNumber,
       ...toRefs(state),
     };
   },

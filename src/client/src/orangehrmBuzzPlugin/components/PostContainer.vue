@@ -26,6 +26,16 @@
           <div class="orangehrm-buzz-post-header-text">
             <oxd-text tag="p" class="orangehrm-buzz-post-emp-name">
               {{ employeeFullName }}
+              <span
+                v-if="awardWeek"
+                class="buzz-award-badge buzz-award-week"
+                title="Colaborador da Semana"
+              >⭐ Semana</span>
+              <span
+                v-if="awardMonth"
+                class="buzz-award-badge buzz-award-month"
+                title="Colaborador do Mês"
+              >🏆 Mês</span>
             </oxd-text>
             <oxd-text tag="p" class="orangehrm-buzz-post-time">
               {{ postDateTime }}
@@ -99,6 +109,14 @@ export default {
       type: Object,
       required: true,
     },
+    awardWeek: {
+      type: Boolean,
+      default: false,
+    },
+    awardMonth: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   emits: ['edit', 'delete'],
@@ -137,3 +155,36 @@ export default {
 </script>
 
 <style lang="scss" scoped src="./post-container.scss"></style>
+
+<style lang="scss" scoped>
+.buzz-award-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: 0.03em;
+  cursor: default;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: scale(1.08);
+  }
+}
+
+.buzz-award-week {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  color: #1a1a1a;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.55);
+}
+
+.buzz-award-month {
+  background: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(109, 40, 217, 0.55);
+}
+</style>

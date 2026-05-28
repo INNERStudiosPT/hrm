@@ -35,7 +35,7 @@
           class="orangehrm-quick-launch-icon"
           :name="action.icon"
           :title="action.label"
-          @click="onClickAction(action.path)"
+          @click="onClickAction(action)"
         />
         <div class="orangehrm-quick-launch-heading" :title="action.label">
           <oxd-text tag="p" class="--text">
@@ -135,10 +135,18 @@ export default {
       .then((response) => {
         const {data} = response.data;
         for (const key in data) {
-          if (data[key]) {
+          if (data[key] && ACTIONS[key]) {
             this.quickLaunchActions.push(ACTIONS[key]);
           }
         }
+        // Add Suite shortcut button
+        this.quickLaunchActions.push({
+          order: 7,
+          icon: 'briefcase',
+          label: 'Suite',
+          path: 'https://suite.innerstudios.pt',
+          isExternal: true,
+        });
       })
       .finally(() => {
         this.isLoading = false;
@@ -146,8 +154,14 @@ export default {
   },
 
   methods: {
-    onClickAction(path) {
-      if (path) navigate(path);
+    onClickAction(action) {
+      if (action && action.path) {
+        if (action.isExternal) {
+          window.open(action.path, '_blank');
+        } else {
+          navigate(action.path);
+        }
+      }
     },
   },
 };

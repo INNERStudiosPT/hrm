@@ -393,13 +393,58 @@ class InnerStudiosCandidatePortalController extends AbstractController implement
 
         return $this->html(
             'Onboarding INNER Studios HR',
-            '<p>Bem-vindo. Junta-te às comunidades e indica disponibilidade para reunir com ' . htmlspecialchars($managerName, ENT_QUOTES, 'UTF-8') . '.</p>
-            <p><a class="button secondary" href="' . InnerStudiosRecruitmentPortalService::getTeamsUrl() . '">Entrar no Teams</a></p>
-            <p><a class="button secondary" href="' . InnerStudiosRecruitmentPortalService::getDiscordUrl() . '">Entrar no Discord</a></p>
-            <form method="post" class="form">
-              <label>Disponibilidade para reunião<textarea required name="availability" rows="5" placeholder="Ex: segunda ou quarta depois das 18h"></textarea></label>
-              <button type="submit">Enviar disponibilidade</button>
-            </form>'
+            '<p>Bem-vindo à equipa! Completa as tuas tarefas de onboarding geral abaixo:</p>
+            
+            <div class="onboarding-tasks" style="margin-bottom: 30px;">
+              <div class="task-item" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 16px;">
+                <div class="task-number" style="background: var(--primary); color: #0b0f19; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0;">1</div>
+                <div class="task-content">
+                  <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #ffffff;">Entrar no Discord</h3>
+                  <p style="margin: 0 0 12px; font-size: 14px; color: var(--text-muted);">Junta-te ao nosso servidor oficial do Discord para estares em contacto com toda a equipa.</p>
+                  <p><a class="button secondary" style="padding: 8px 16px; font-size: 13px;" href="' . InnerStudiosRecruitmentPortalService::getDiscordUrl() . '" target="_blank">Aceder ao Discord</a></p>
+                </div>
+              </div>
+
+              <div class="task-item" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 16px;">
+                <div class="task-number" style="background: var(--primary); color: #0b0f19; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0;">2</div>
+                <div class="task-content">
+                  <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #ffffff;">Entrar no Teams</h3>
+                  <p style="margin: 0 0 12px; font-size: 14px; color: var(--text-muted);">Junta-te ao nosso Microsoft Teams corporativo para reuniões e comunicações internas.</p>
+                  <p><a class="button secondary" style="padding: 8px 16px; font-size: 13px;" href="' . InnerStudiosRecruitmentPortalService::getTeamsUrl() . '" target="_blank">Aceder ao Teams</a></p>
+                </div>
+              </div>
+
+              <div class="task-item" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 16px;">
+                <div class="task-number" style="background: var(--primary); color: #0b0f19; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0;">3</div>
+                <div class="task-content">
+                  <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #ffffff;">Configurar o horário de trabalho</h3>
+                  <p style="margin: 0; font-size: 14px; color: var(--text-muted);">Acede ao INNER Studios HR e configura o teu horário de trabalho (para quem o deve configurar e não o HR).</p>
+                </div>
+              </div>
+
+              <div class="task-item" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 16px;">
+                <div class="task-number" style="background: var(--primary); color: #0b0f19; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0;">4</div>
+                <div class="task-content">
+                  <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #ffffff;">Enviar uma mensagem no Buzz</h3>
+                  <p style="margin: 0; font-size: 14px; color: var(--text-muted);">Publica uma mensagem friendly de apresentação no Buzz do INNER Studios HR para te dares a conhecer à equipa.</p>
+                </div>
+              </div>
+
+              <div class="task-item" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; display: flex; align-items: flex-start; gap: 16px;">
+                <div class="task-number" style="background: var(--primary); color: #0b0f19; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0;">5</div>
+                <div class="task-content" style="width: 100%;">
+                  <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #ffffff;">Marcar reunião com o Manager</h3>
+                  <p style="margin: 0 0 16px; font-size: 14px; color: var(--text-muted);">Indica a tua disponibilidade no formulário abaixo para combinarmos a primeira reunião de alinhamento com <strong>' . htmlspecialchars($managerName, ENT_QUOTES, 'UTF-8') . '</strong> (via link de marcação do supervisor).</p>
+                  
+                  <form method="post" class="form" style="margin-top: 12px; gap: 12px;">
+                    <label style="font-weight: 600; font-size: 13px; color: #ffffff;">As tuas disponibilidades:
+                      <textarea required name="availability" rows="4" placeholder="Ex: segunda ou quarta depois das 18h" style="margin-top: 6px; padding: 10px;"></textarea>
+                    </label>
+                    <button type="submit" style="padding: 10px 20px; font-size: 14px; align-self: flex-start; margin-top: 8px;">Enviar disponibilidade</button>
+                  </form>
+                </div>
+              </div>
+            </div>'
         );
     }
 
