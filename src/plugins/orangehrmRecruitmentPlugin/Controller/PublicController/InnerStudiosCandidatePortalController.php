@@ -41,7 +41,7 @@ class InnerStudiosCandidatePortalController extends AbstractController implement
         }
 
         $sentCount = $this->getPortalService()->sendPendingConfirmations();
-        
+
         $response = $this->getResponse();
         $response->setStatusCode(Response::HTTP_OK);
         $response->headers->set('Content-Type', 'application/json');

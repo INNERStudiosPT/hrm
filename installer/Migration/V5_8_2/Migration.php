@@ -63,4 +63,3 @@ class Migration extends AbstractMigration
         return '5.8.2';
     }
 }
-

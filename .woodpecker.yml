@@ -40,4 +40,22 @@ steps:
     environment:
       HOME: /kaniko
     commands:
-      - /kaniko/executor --context . --dockerfile Dockerfile --no-push
+      - /kaniko/executor --context . --dockerfile Dockerfile.hrm --no-push
+
+  - name: deploy
+    image: alpine:3
+    when:
+      - event: push
+        branch: main
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/fivem/apps/hrm:/app
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - apk add --no-cache docker-cli docker-compose
+      - cd /app
+      - chmod +x ./deploy.sh
+      - ./deploy.sh
+

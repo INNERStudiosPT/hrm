@@ -52,4 +52,3 @@ class InnerStudiosStaffAwardsApiController extends AbstractController
         return $response;
     }
 }
-

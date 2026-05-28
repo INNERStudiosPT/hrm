@@ -10,7 +10,6 @@ use OrangeHRM\Core\Traits\ORM\EntityManagerHelperTrait;
 use OrangeHRM\Core\Dto\Base64Attachment;
 use OrangeHRM\Entity\CandidateVacancy;
 use OrangeHRM\Entity\WorkflowStateMachine;
-use OrangeHRM\Recruitment\Service\CandidateService;
 
 class InnerStudiosRecruitmentPortalService
 {
@@ -186,7 +185,7 @@ class InnerStudiosRecruitmentPortalService
     {
         $this->ensureSchema();
         $db = $this->getEntityManager();
-        
+
         $stmt = $this->getConnection()->executeQuery(
             'SELECT cv.id 
              FROM ohrm_job_candidate_vacancy cv
@@ -194,10 +193,10 @@ class InnerStudiosRecruitmentPortalService
              LEFT JOIN ohrm_innerstudios_recruitment_email_log el ON el.event_key = CONCAT(\'candidate:\', cv.candidate_id, \':application-confirmation\')
              WHERE el.id IS NULL'
         );
-        
+
         $pending = $stmt->fetchAllAssociative();
         $sent = 0;
-        
+
         $repo = $db->getRepository(CandidateVacancy::class);
         foreach ($pending as $row) {
             $candidateVacancy = $repo->find((int)$row['id']);
@@ -206,7 +205,7 @@ class InnerStudiosRecruitmentPortalService
                 $sent++;
             }
         }
-        
+
         return $sent;
     }
 
@@ -548,7 +547,7 @@ class InnerStudiosRecruitmentPortalService
     ): string {
         $safeTitle = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
         $safeMessage = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
-        
+
         $button = '';
         if ($buttonLabel && $buttonUrl) {
             $button = sprintf(
@@ -559,7 +558,7 @@ class InnerStudiosRecruitmentPortalService
                 htmlspecialchars($buttonLabel, ENT_QUOTES, 'UTF-8')
             );
         }
-        
+
         $extraLinks = '';
         foreach ($links as $label => $url) {
             $extraLinks .= sprintf(
