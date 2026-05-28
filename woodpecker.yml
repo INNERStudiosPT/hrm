@@ -1,0 +1,50 @@
+services:
+  - name: docker
+    image: docker:27-dind
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+
+steps:
+  - name: lint-node
+    image: node:20-bookworm
+    when:
+      - event: [push, pull_request]
+    commands:
+      - corepack enable
+      - (cd src/client && (yarn install --immutable || yarn install) && yarn lint)
+      - (cd installer/client && (yarn install --immutable || yarn install) && yarn lint)
+      - (cd src/test/functional && (yarn install --immutable || yarn install) && yarn lint)
+
+  - name: lint-php
+    image: ubuntu:24.04
+    when:
+      - event: [push, pull_request]
+    commands:
+      - apt-get update
+      - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends php8.3-cli php8.3-mbstring php8.3-xml php8.3-curl php8.3-zip php8.3-intl git curl unzip
+      - |
+        if ! command -v composer >/dev/null 2>&1; then
+          curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+        fi
+      - composer validate --strict -d src
+      - composer install -d src
+      - composer install -d devTools/core
+      - php devTools/core/console.php php-cs-fix --php php8.3
+      - php devTools/core/console.php generate-open-api-doc --throw
+      - git status --porcelain
+      - |
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Files changed with lint fix"
+          git diff
+          exit 1
+        fi
+
+  - name: docker-build
+    image: docker:27
+    when:
+      - event: [push, pull_request]
+    environment:
+      DOCKER_HOST: tcp://docker:2375
+    commands:
+      - docker build . --file Dockerfile
