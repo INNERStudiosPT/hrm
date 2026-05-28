@@ -1,0 +1,59 @@
+services:
+  hrm-db:
+    image: mariadb:11.4
+    container_name: hrm-db
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-orangehrm}
+      MARIADB_USER: ${MARIADB_USER:-orangehrm}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    volumes:
+      - hrm-db-data:/var/lib/mysql
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  hrm-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.hrm
+    container_name: hrm-web
+    restart: always
+    ports:
+      - "127.0.0.1:3111:80"
+    depends_on:
+      hrm-db:
+        condition: service_healthy
+    volumes:
+      - hrm-src-config:/var/www/html/src/config
+      - hrm-src-cache:/var/www/html/src/cache
+      - hrm-src-log:/var/www/html/src/log
+      - hrm-lib-confs:/var/www/html/lib/confs
+    networks:
+      - default
+
+volumes:
+  hrm-db-data:
+    external: true
+    name: hrm_hrm-db-data
+  hrm-src-config:
+    external: true
+    name: hrm_hrm-src-config
+  hrm-src-cache:
+    external: true
+    name: hrm_hrm-src-cache
+  hrm-src-log:
+    external: true
+    name: hrm_hrm-src-log
+  hrm-lib-confs:
+    external: true
+    name: hrm_hrm-lib-confs
+
+networks:
+  default:
+    name: hrm_default
