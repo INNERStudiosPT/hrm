@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Align compose project name when running from mounted '/app' folder inside CI container
+export COMPOSE_PROJECT_NAME=hrm
+
 echo "=================================================="
 echo "⏳ [$(date)] Starting auto-deploy for hrm"
 echo "=================================================="
