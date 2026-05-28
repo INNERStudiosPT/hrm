@@ -37,5 +37,7 @@ steps:
     image: gcr.io/kaniko-project/executor:debug
     when:
       - event: [push, pull_request]
+    environment:
+      HOME: /kaniko
     commands:
       - /kaniko/executor --context . --dockerfile Dockerfile --no-push
