@@ -284,6 +284,19 @@ class UserDao extends BaseDao
         return $q->getQuery()->getOneOrNullResult();
     }
 
+    public function getUserByEmpNumber(int $empNumber): ?User
+    {
+        $q = $this->createQueryBuilder(User::class, 'u');
+        $q->leftJoin('u.employee', 'e')
+            ->andWhere('e.empNumber = :empNumber')
+            ->andWhere('u.deleted = :deleted')
+            ->setParameter('empNumber', $empNumber)
+            ->setParameter('deleted', false)
+            ->setMaxResults(1);
+
+        return $q->getQuery()->getOneOrNullResult();
+    }
+
     /**
      * @return User|null
      */

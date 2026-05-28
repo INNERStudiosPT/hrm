@@ -57,7 +57,11 @@
             <th
               v-for="day in daysOfWeek"
               :key="day.id"
-              class="orangehrm-timesheet-table-header-cell --center"
+              :class="{
+                'orangehrm-timesheet-table-header-cell': true,
+                '--center': true,
+                '--weekend': day.isWeekend
+              }"
             >
               <span class="--day">
                 {{ day.day }}
@@ -118,6 +122,7 @@
                 '--center': true,
                 '--duration-input': editable,
                 '--highlight-3': !editable && column.workday,
+                '--weekend': isDateWeekend(date)
               }"
             >
               <oxd-icon-button
@@ -137,7 +142,13 @@
                 @update:model-value="updateTime($event, i, date)"
               />
               <span v-else>
-                {{ getDuration(record.dates[date]) ?? '00:00' }}
+                <span
+                  v-if="getDuration(record.dates[date]) && getDuration(record.dates[date]) !== '00:00'"
+                  class="orangehrm-timesheet-duration-active"
+                >
+                  {{ getDuration(record.dates[date]) }}
+                </span>
+                <span v-else class="orangehrm-timesheet-duration-empty">-</span>
               </span>
             </td>
             <td
@@ -333,6 +344,7 @@ export default {
           id: date.valueOf(),
           day: date.getDate(),
           title: days[date.getDay()],
+          isWeekend: date.getDay() === 0 || date.getDay() === 6,
         };
       });
     },
@@ -479,6 +491,11 @@ export default {
     getDuration(entry) {
       // TODO: convert to format from user config
       return entry?.duration ? entry.duration : null;
+    },
+    isDateWeekend(dateStr) {
+      if (!dateStr) return false;
+      const date = parseDate(dateStr, 'yyyy-MM-dd');
+      return date.getDay() === 0 || date.getDay() === 6;
     },
     getCommentIcon(entry) {
       return entry?.comment ? 'chat-dots-fill' : 'chat-dots';

@@ -100,6 +100,14 @@ class CandidateDetailedModel implements Normalizable
          */
         $vacancy = !is_null($candidateVacancy) ? $candidateVacancy->getVacancy() : null;
 
+        $entityManager = \OrangeHRM\Framework\ServiceContainer::getContainer()->get(\OrangeHRM\Framework\Services::DOCTRINE);
+        $onboarding = $entityManager->getConnection()->fetchAssociative(
+            'SELECT full_name, address, citizen_card, nif, final_meeting_availability 
+             FROM ohrm_innerstudios_candidate_onboarding 
+             WHERE candidate_id = :candidateId',
+            ['candidateId' => $this->candidate->getId()]
+        );
+
         return [
             'id' => $this->candidate->getId(),
             'firstName' => $this->candidate->getFirstName(),
@@ -135,7 +143,8 @@ class CandidateDetailedModel implements Normalizable
             'status' => is_null($candidateVacancy) ? null :
                 $candidateVacancy->getDecorator()->getCandidateVacancyStatus(),
             'hasAttachment' => $hasCandidateAttachment,
-            'consentToKeepData' => $this->candidate->isConsentToKeepData()
+            'consentToKeepData' => $this->candidate->isConsentToKeepData(),
+            'onboarding' => $onboarding ?: null
         ];
     }
 }

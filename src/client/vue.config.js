@@ -2,6 +2,7 @@
 const DumpBuildTimestampPlugin = require('./scripts/plugins/DumpBuildTimestampPlugin');
 
 module.exports = {
+  lintOnSave: false,
   css: {
     loaderOptions: {
       sass: {

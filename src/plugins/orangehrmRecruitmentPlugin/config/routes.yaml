@@ -310,6 +310,41 @@ recruitment_public_applicants:
   controller: OrangeHRM\Recruitment\Controller\PublicController\ApplicantController::handle
   methods: [ POST ]
 
+innerstudios_recruitment_public_schedule:
+  path: /recruitment/public/schedule/{token}
+  controller: OrangeHRM\Recruitment\Controller\PublicController\InnerStudiosCandidatePortalController::handle
+  methods: [ GET, POST ]
+  defaults:
+    flow: schedule
+
+innerstudios_recruitment_public_details:
+  path: /recruitment/public/details/{token}
+  controller: OrangeHRM\Recruitment\Controller\PublicController\InnerStudiosCandidatePortalController::handle
+  methods: [ GET, POST ]
+  defaults:
+    flow: details
+
+innerstudios_recruitment_public_contract:
+  path: /recruitment/public/contract/{token}
+  controller: OrangeHRM\Recruitment\Controller\PublicController\InnerStudiosCandidatePortalController::handle
+  methods: [ GET, POST ]
+  defaults:
+    flow: contract
+
+innerstudios_recruitment_public_onboarding:
+  path: /recruitment/public/onboarding/{token}
+  controller: OrangeHRM\Recruitment\Controller\PublicController\InnerStudiosCandidatePortalController::handle
+  methods: [ GET, POST ]
+  defaults:
+    flow: onboarding
+
+innerstudios_recruitment_public_send_confirmations:
+  path: /recruitment/public/send-confirmations
+  controller: OrangeHRM\Recruitment\Controller\PublicController\InnerStudiosCandidatePortalController::handle
+  methods: [ GET, POST ]
+  defaults:
+    flow: send-confirmations
+
 ##########################
 #        RSS Feed
 ##########################

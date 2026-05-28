@@ -139,10 +139,19 @@ abstract class AbstractCandidateActionAPI extends Endpoint implements ResourceEn
             $this->commitTransaction();
             return new EndpointResourceResult(CandidateHistoryDefaultModel::class, $result);
         } catch (RecordNotFoundException|ForbiddenException|BadRequestException $e) {
-            $this->rollBackTransaction();
+            try {
+                $this->rollBackTransaction();
+            } catch (Exception $rollbackEx) {
+                // Ignore rollback exceptions to preserve the original exception
+            }
             throw $e;
         } catch (Exception $e) {
-            $this->rollBackTransaction();
+            error_log("CANDIDATE ACTION UPDATE FAILED: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine() . "\n" . $e->getTraceAsString());
+            try {
+                $this->rollBackTransaction();
+            } catch (Exception $rollbackEx) {
+                // Ignore rollback exceptions to preserve the original exception
+            }
             throw new TransactionException($e);
         }
     }

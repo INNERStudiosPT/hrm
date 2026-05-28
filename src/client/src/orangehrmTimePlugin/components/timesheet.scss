@@ -211,3 +211,26 @@ $card-padding: $card-padding-top-bottom $card-padding-left-right;
 ::v-deep(.oxd-input) {
   min-width: 50px;
 }
+
+th.--weekend,
+td.--weekend {
+  background-color: #f8fafc !important;
+}
+
+.orangehrm-timesheet-duration-active {
+  font-weight: 700;
+  color: #0d9488 !important;
+  background-color: #f0fdfa !important;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid #ccfbf1;
+  display: inline-block;
+  min-width: 45px;
+  text-align: center;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.orangehrm-timesheet-duration-empty {
+  color: #cbd5e1 !important;
+  font-weight: 400;
+}

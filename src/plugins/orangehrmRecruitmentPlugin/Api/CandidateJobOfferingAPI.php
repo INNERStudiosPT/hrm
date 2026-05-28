@@ -97,8 +97,6 @@ class CandidateJobOfferingAPI extends AbstractCandidateActionAPI
 
     protected function afterCandidateAction(CandidateVacancy $candidateVacancy, ?\OrangeHRM\Entity\Employee $employee): void
     {
-        $this->ensureInnerStudiosOfferTable();
-
         $workerDecides = $this->getRequestParams()->getBooleanOrNull(
             RequestParams::PARAM_TYPE_BODY,
             self::PARAMETER_WORK_SHIFT_WORKER_DECIDES
@@ -111,6 +109,15 @@ class CandidateJobOfferingAPI extends AbstractCandidateActionAPI
         if (!$workerDecides && is_null($workShiftId)) {
             throw $this->getBadRequestException('Work shift is required');
         }
+
+        $this->getEntityManager()->getConnection()->executeStatement(
+            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_offer (
+                candidate_id INT NOT NULL PRIMARY KEY,
+                work_shift_id INT NULL,
+                worker_decides TINYINT(1) NOT NULL DEFAULT 0,
+                updated_at DATETIME NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+        );
 
         $this->getEntityManager()->getConnection()->executeStatement(
             'INSERT INTO ohrm_innerstudios_recruitment_offer
@@ -126,18 +133,8 @@ class CandidateJobOfferingAPI extends AbstractCandidateActionAPI
                 'workerDecides' => $workerDecides ? 1 : 0,
             ]
         );
-    }
 
-    private function ensureInnerStudiosOfferTable(): void
-    {
-        $this->getEntityManager()->getConnection()->executeStatement(
-            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_offer (
-                candidate_id INT NOT NULL,
-                work_shift_id INT NULL,
-                worker_decides TINYINT(1) NOT NULL DEFAULT 0,
-                updated_at DATETIME NOT NULL,
-                PRIMARY KEY (candidate_id)
-            )'
-        );
+        $portalService = new \OrangeHRM\Recruitment\Service\InnerStudiosRecruitmentPortalService();
+        $portalService->sendWelcomeDetails($candidateVacancy);
     }
 }

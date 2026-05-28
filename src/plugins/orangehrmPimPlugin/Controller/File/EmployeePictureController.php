@@ -29,10 +29,12 @@ use OrangeHRM\Framework\Http\RedirectResponse;
 use OrangeHRM\Framework\Http\Request;
 use OrangeHRM\Framework\Http\Response;
 use OrangeHRM\Pim\Service\EmployeePictureService;
+use OrangeHRM\Pim\Traits\Service\EmployeeServiceTrait;
 
 class EmployeePictureController extends AbstractFileController
 {
     use AuthUserTrait;
+    use EmployeeServiceTrait;
 
     /**
      * @var EmployeePictureService|null
@@ -66,8 +68,9 @@ class EmployeePictureController extends AbstractFileController
     public function handle(Request $request)
     {
         $empNumber = $request->attributes->get('empNumber');
-        if (!is_null($empNumber)) {
-            $ssoAvatarUrl = $this->getSsoAvatarUrl($request, (int)$empNumber);
+        if (!is_null($empNumber) && is_numeric($empNumber)) {
+            $empNumber = (int)$empNumber;
+            $ssoAvatarUrl = $this->getSsoAvatarUrl($request, $empNumber);
             if ($ssoAvatarUrl !== null) {
                 return new RedirectResponse($ssoAvatarUrl);
             }
@@ -98,16 +101,12 @@ class EmployeePictureController extends AbstractFileController
 
     private function getSsoAvatarUrl(Request $request, int $empNumber): ?string
     {
-        if ($this->getAuthUser()->getEmpNumber() !== $empNumber) {
+        $employee = $this->getEmployeeService()->getEmployeeDao()->getEmployeeByEmpNumber($empNumber);
+        if (is_null($employee)) {
             return null;
         }
 
-        $profile = $this->getInnerStudiosSsoService()->getProfile($request);
-        if (!is_array($profile)) {
-            return null;
-        }
-
-        return $this->getInnerStudiosSsoService()->getAvatarUrl($profile);
+        return $this->getInnerStudiosSsoService()->getAvatarUrlForEmployee($request, $employee);
     }
 
     /**

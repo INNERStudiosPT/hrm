@@ -58,4 +58,10 @@ class CandidateShortlistingAPI extends AbstractCandidateActionAPI
     {
         return WorkflowStateMachine::RECRUITMENT_APPLICATION_ACTION_SHORTLIST;
     }
+
+    protected function afterCandidateAction(\OrangeHRM\Entity\CandidateVacancy $candidateVacancy, ?\OrangeHRM\Entity\Employee $employee): void
+    {
+        $portalService = new \OrangeHRM\Recruitment\Service\InnerStudiosRecruitmentPortalService();
+        $portalService->sendInterviewScheduling($candidateVacancy);
+    }
 }

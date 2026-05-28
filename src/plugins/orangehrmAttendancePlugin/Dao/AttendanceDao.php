@@ -494,13 +494,19 @@ class AttendanceDao extends BaseDao
         }
 
         if (!is_null($attendanceRecordSearchFilterParams->getFromDate())) {
-            $q->andWhere($q->expr()->gte('attendanceRecord.punchInUserTime', ':fromDate'))
-                ->setParameter('fromDate', $attendanceRecordSearchFilterParams->getFromDate());
+            $q->andWhere($q->expr()->orX(
+                $q->expr()->gte('attendanceRecord.punchInUserTime', ':fromDate'),
+                $q->expr()->gte('attendanceRecord.punchOutUserTime', ':fromDate')
+            ))
+            ->setParameter('fromDate', $attendanceRecordSearchFilterParams->getFromDate());
         }
 
         if (!is_null($attendanceRecordSearchFilterParams->getToDate())) {
-            $q->andWhere($q->expr()->lte('attendanceRecord.punchInUserTime', ':toDate'))
-                ->setParameter('toDate', $attendanceRecordSearchFilterParams->getToDate());
+            $q->andWhere($q->expr()->orX(
+                $q->expr()->lte('attendanceRecord.punchInUserTime', ':toDate'),
+                $q->expr()->lte('attendanceRecord.punchOutUserTime', ':toDate')
+            ))
+            ->setParameter('toDate', $attendanceRecordSearchFilterParams->getToDate());
         }
         return $this->getQueryBuilderWrapper($q);
     }

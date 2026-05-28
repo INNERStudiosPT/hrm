@@ -170,6 +170,63 @@
           <submit-button :label="$t('general.save')" />
         </oxd-form-actions>
       </oxd-form>
+
+      <!-- Onboarding details section -->
+      <div v-if="candidate.onboarding" class="orangehrm-onboarding-container" style="margin-top: 24px;">
+        <oxd-divider />
+        <oxd-text tag="h6" class="orangehrm-main-title" style="margin-top: 16px; margin-bottom: 16px;">
+          Dados de Onboarding (Candidato)
+        </oxd-text>
+        <oxd-form-row>
+          <oxd-grid :cols="2" class="orangehrm-full-width-grid">
+            <oxd-grid-item>
+              <oxd-input-field
+                :model-value="candidate.onboarding.full_name || ''"
+                label="Nome Completo"
+                disabled
+              />
+            </oxd-grid-item>
+            <oxd-grid-item>
+              <oxd-input-field
+                :model-value="candidate.onboarding.nif || ''"
+                label="NIF"
+                disabled
+              />
+            </oxd-grid-item>
+          </oxd-grid>
+        </oxd-form-row>
+        <oxd-form-row>
+          <oxd-grid :cols="2" class="orangehrm-full-width-grid">
+            <oxd-grid-item>
+              <oxd-input-field
+                :model-value="candidate.onboarding.citizen_card || ''"
+                label="Cartão de Cidadão"
+                disabled
+              />
+            </oxd-grid-item>
+            <oxd-grid-item>
+              <oxd-input-field
+                :model-value="candidate.onboarding.address || ''"
+                label="Morada"
+                type="textarea"
+                disabled
+              />
+            </oxd-grid-item>
+          </oxd-grid>
+        </oxd-form-row>
+        <oxd-form-row v-if="candidate.onboarding.final_meeting_availability">
+          <oxd-grid :cols="1" class="orangehrm-full-width-grid">
+            <oxd-grid-item>
+              <oxd-input-field
+                :model-value="candidate.onboarding.final_meeting_availability || ''"
+                label="Disponibilidade para Reunião de Onboarding"
+                type="textarea"
+                disabled
+              />
+            </oxd-grid-item>
+          </oxd-grid>
+        </oxd-form-row>
+      </div>
     </div>
 
     <confirmation-dialog

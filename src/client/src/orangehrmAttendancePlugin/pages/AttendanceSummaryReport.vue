@@ -19,6 +19,7 @@
 
 <template>
   <reports-table
+    ref="reportsTableRef"
     module="time"
     name="attendance"
     :prefetch="false"
@@ -83,6 +84,22 @@
               display-type="secondary"
               :label="$t('general.view')"
             />
+            <oxd-button
+              v-if="hasData"
+              type="button"
+              display-type="ghost"
+              label="Exportar Excel"
+              @click="exportToExcel"
+              style="margin-left: 8px; border: 1px solid #4caf50; color: #4caf50;"
+            />
+            <oxd-button
+              v-if="hasData"
+              type="button"
+              display-type="ghost"
+              label="Exportar PDF"
+              @click="exportToPDF"
+              style="margin-left: 8px; border: 1px solid #f44336; color: #f44336;"
+            />
           </oxd-form-actions>
         </oxd-form>
       </oxd-table-filter>
@@ -137,6 +154,7 @@ export default {
   },
 
   setup() {
+    const reportsTableRef = ref(null);
     const filters = ref({
       ...defaultFilters,
     });
@@ -174,11 +192,164 @@ export default {
       };
     });
 
+    const hasData = computed(() => {
+      return !!(
+        reportsTableRef.value &&
+        reportsTableRef.value.items &&
+        reportsTableRef.value.items.length > 0
+      );
+    });
+
+    const exportToExcel = () => {
+      if (!reportsTableRef.value || !reportsTableRef.value.items || reportsTableRef.value.items.length === 0) {
+        return;
+      }
+      const items = reportsTableRef.value.items;
+      const headers = reportsTableRef.value.headers;
+      
+      const headerRow = headers.map(h => `"${h.name.replace(/"/g, '""')}"`).join(',');
+      const dataRows = items.map(item => {
+        return headers.map(h => {
+          const val = item[h.element || h.prop] || '';
+          return `"${String(val).replace(/"/g, '""')}"`;
+        }).join(',');
+      });
+      
+      const csvContent = "\uFEFF" + [headerRow, ...dataRows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'relatorio_sumario_assiduidade.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    const exportToPDF = () => {
+      if (!reportsTableRef.value || !reportsTableRef.value.items || reportsTableRef.value.items.length === 0) {
+        return;
+      }
+      const items = reportsTableRef.value.items;
+      const headers = reportsTableRef.value.headers;
+      const totalDuration = reportsTableRef.value.response?.meta?.sum?.label || '0.00';
+      
+      const printWindow = window.open('', '_blank');
+      
+      let tableHeadersHtml = '';
+      headers.forEach(h => {
+        tableHeadersHtml += `<th style="padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: left; font-weight: 600; color: #4a5568;">${h.name}</th>`;
+      });
+      
+      let tableRowsHtml = '';
+      items.forEach(item => {
+        tableRowsHtml += '<tr style="border-bottom: 1px solid #edf2f7;">';
+        headers.forEach(h => {
+          const val = item[h.element || h.prop] || '';
+          tableRowsHtml += `<td style="padding: 12px; color: #2d3748;">${val}</td>`;
+        });
+        tableRowsHtml += '</tr>';
+      });
+      
+      const dateRange = (filters.value.fromDate || '') + (filters.value.toDate ? ` a ${filters.value.toDate}` : '');
+      
+      const htmlContent = `
+        <html>
+          <head>
+            <title>Relatório Sumário de Assiduidade</title>
+            <style>
+              body {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                margin: 40px;
+                color: #2d3748;
+              }
+              .header {
+                margin-bottom: 30px;
+                border-bottom: 2px solid #319795;
+                padding-bottom: 15px;
+              }
+              .title {
+                font-size: 24px;
+                font-weight: 700;
+                color: #1a202c;
+                margin: 0;
+              }
+              .subtitle {
+                font-size: 14px;
+                color: #718096;
+                margin-top: 5px;
+              }
+              .info {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                font-size: 12px;
+                color: #4a5568;
+              }
+              table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 30px;
+              }
+              .footer {
+                display: flex;
+                justify-content: flex-end;
+                font-size: 16px;
+                font-weight: 700;
+                color: #1a202c;
+                border-top: 2px solid #edf2f7;
+                padding-top: 15px;
+              }
+              @media print {
+                body { margin: 20px; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div class="title">Relatório Sumário de Assiduidade</div>
+              <div class="subtitle">OrangeHRM - INNER Studios</div>
+            </div>
+            <div class="info">
+              <div><strong>Filtro de Período:</strong> ${dateRange || 'Todo o período'}</div>
+              <div><strong>Data de Emissão:</strong> ${new Date().toLocaleDateString('pt-PT')}</div>
+            </div>
+            <table>
+              <thead>
+                <tr>${tableHeadersHtml}</tr>
+              </thead>
+              <tbody>
+                ${tableRowsHtml}
+              </tbody>
+            </table>
+            <div class="footer">
+              Duração Total: ${totalDuration} Horas
+            </div>
+            <script>
+              window.onload = function() {
+                window.print();
+                setTimeout(function() { window.close(); }, 500);
+              };
+            <\/script>
+          </body>
+        </html>
+      `;
+      
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+    };
+
     return {
       rules,
       filters,
       serializedFilters,
+      reportsTableRef,
+      hasData,
+      exportToExcel,
+      exportToPDF,
     };
   },
 };
 </script>
+

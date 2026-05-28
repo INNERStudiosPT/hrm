@@ -219,6 +219,7 @@ class VueControllerHelper
     {
         try {
             $menuItems = $this->getMenuService()->getMenuItems($this->getRequest()->getBaseUrl());
+            $menuItems = $this->applyInnerStudiosMenuLayout($menuItems);
             if (str_starts_with($this->getRequest()->getPathInfo(), '/recruitment')) {
                 $menuItems[1][] = [
                     'id' => 900002,
@@ -231,6 +232,97 @@ class VueControllerHelper
         } catch (ServiceException $e) {
         }
         return [[], []];
+    }
+
+    /**
+     * @param array<int, array<int, array<string, mixed>>> $menuItems
+     * @return array<int, array<int, array<string, mixed>>>
+     */
+    private function applyInnerStudiosMenuLayout(array $menuItems): array
+    {
+        $sidePanelItems = $menuItems[0] ?? [];
+        $topMenuItems = $menuItems[1] ?? [];
+        $maintenanceItem = null;
+        $adminIndex = null;
+        $dashboardItem = null;
+        $pathInfo = $this->getRequest()->getPathInfo();
+
+        foreach ($sidePanelItems as $index => $item) {
+            $name = strtolower((string)($item['name'] ?? ''));
+            $url = (string)($item['url'] ?? '');
+            if ($name === 'my info' || str_contains($url, '/pim/viewMyDetails')) {
+                unset($sidePanelItems[$index]);
+                continue;
+            }
+            if ($name === 'maintenance' || str_contains($url, '/maintenance/')) {
+                $maintenanceItem = $item;
+                unset($sidePanelItems[$index]);
+                continue;
+            }
+            if ($name === 'dashboard' || str_contains($url, '/dashboard/')) {
+                $dashboardItem = $item;
+                unset($sidePanelItems[$index]);
+                continue;
+            }
+            if ($name === 'admin' || str_contains($url, '/admin/')) {
+                $adminIndex = $index;
+            }
+        }
+
+        $sidePanelItems = array_values($sidePanelItems);
+        if (is_array($dashboardItem)) {
+            array_unshift($sidePanelItems, $dashboardItem);
+        }
+
+        if (str_starts_with($pathInfo, '/maintenance')) {
+            foreach ($sidePanelItems as $index => $item) {
+                unset($sidePanelItems[$index]['active']);
+                if (
+                    strtolower((string)($item['name'] ?? '')) === 'admin' ||
+                    str_contains((string)($item['url'] ?? ''), '/admin/')
+                ) {
+                    $sidePanelItems[$index]['active'] = true;
+                }
+            }
+        } elseif ($adminIndex !== null) {
+            $sidePanelItems = array_values($sidePanelItems);
+        }
+
+        if (is_array($maintenanceItem) && $this->shouldShowMaintenanceUnderAdmin($sidePanelItems, $pathInfo)) {
+            $topMenuItems[] = [
+                'id' => $maintenanceItem['id'] ?? 900003,
+                'name' => $maintenanceItem['name'] ?? 'Maintenance',
+                'url' => $maintenanceItem['url'] ?? $this->getRequest()->getBaseUrl() . '/maintenance/viewMaintenanceModule',
+                'active' => str_starts_with($pathInfo, '/maintenance'),
+                'children' => [],
+            ];
+        }
+
+        return [$sidePanelItems, $topMenuItems];
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $sidePanelItems
+     */
+    private function shouldShowMaintenanceUnderAdmin(array $sidePanelItems, string $pathInfo): bool
+    {
+        if (str_starts_with($pathInfo, '/maintenance')) {
+            return true;
+        }
+
+        foreach ($sidePanelItems as $item) {
+            if (
+                (
+                    strtolower((string)($item['name'] ?? '')) === 'admin' ||
+                    str_contains((string)($item['url'] ?? ''), '/admin/')
+                ) &&
+                !empty($item['active'])
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

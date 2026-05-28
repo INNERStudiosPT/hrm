@@ -54,7 +54,7 @@
         />
         <oxd-button
           v-if="canEditTimesheet"
-          display-type="ghost"
+          display-type="secondary"
           :label="$t('general.edit')"
           @click="onClickEdit"
         />

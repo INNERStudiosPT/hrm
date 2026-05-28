@@ -21,6 +21,7 @@ namespace OrangeHRM\Authentication\Service;
 
 use GuzzleHttp\Client;
 use OrangeHRM\Admin\Traits\Service\UserServiceTrait;
+use OrangeHRM\Entity\Employee;
 use OrangeHRM\Entity\User;
 use OrangeHRM\Framework\Http\Request;
 use Throwable;
@@ -31,6 +32,12 @@ class InnerStudiosSsoService
 
     private const SESSION_COOKIE = 'innercircle_session';
     private const PROFILE_URL = 'https://api.innerstudios.pt/v1/auth/me';
+    private const USER_LOOKUP_PATHS = [
+        '/v1/users/lookup',
+        '/v1/auth/users/lookup',
+        '/v1/users/search',
+        '/v1/auth/users/search',
+    ];
 
     /**
      * @return array<string, mixed>|null
@@ -96,12 +103,148 @@ class InnerStudiosSsoService
      */
     public function getAvatarUrl(array $profile): ?string
     {
-        if (!isset($profile['avatar_url']) || !is_string($profile['avatar_url'])) {
+        foreach (['avatar_url', 'avatarUrl', 'picture', 'image', 'photo_url', 'profile_picture'] as $field) {
+            if (!isset($profile[$field]) || !is_string($profile[$field])) {
+                continue;
+            }
+
+            $avatarUrl = trim($profile[$field]);
+            if (filter_var($avatarUrl, FILTER_VALIDATE_URL)) {
+                return $avatarUrl;
+            }
+        }
+
+        return null;
+    }
+
+    public function getAvatarUrlForEmployee(Request $request, Employee $employee): ?string
+    {
+        $token = $request->cookies->get(self::SESSION_COOKIE);
+        if (!is_string($token) || trim($token) === '') {
             return null;
         }
 
-        $avatarUrl = trim($profile['avatar_url']);
-        return filter_var($avatarUrl, FILTER_VALIDATE_URL) ? $avatarUrl : null;
+        $currentProfile = $this->getProfile($request);
+        if (is_array($currentProfile) && $this->profileMatchesEmployee($currentProfile, $employee)) {
+            return $this->getAvatarUrl($currentProfile);
+        }
+
+        foreach ($this->getEmployeeLookupValues($employee) as $lookup) {
+            $profile = $this->lookupProfile($token, $lookup);
+            if (is_array($profile)) {
+                $avatarUrl = $this->getAvatarUrl($profile);
+                if ($avatarUrl !== null) {
+                    return $avatarUrl;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function lookupProfile(string $token, string $lookup): ?array
+    {
+        $client = new Client(['timeout' => 5, 'http_errors' => false]);
+        foreach (self::USER_LOOKUP_PATHS as $path) {
+            try {
+                $response = $client->get(
+                    'https://api.innerstudios.pt' . $path,
+                    [
+                        'headers' => [
+                            'Accept' => 'application/json',
+                            'Cookie' => self::SESSION_COOKIE . '=' . $token,
+                        ],
+                        'query' => [
+                            'q' => $lookup,
+                            'email' => $lookup,
+                            'username' => $lookup,
+                        ],
+                    ]
+                );
+            } catch (Throwable $e) {
+                continue;
+            }
+
+            if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
+                continue;
+            }
+
+            $payload = json_decode((string)$response->getBody(), true);
+            if (!is_array($payload)) {
+                continue;
+            }
+
+            $profile = $this->extractProfileFromLookupPayload($payload, $lookup);
+            if (is_array($profile)) {
+                return $profile;
+            }
+        }
+
+        return null;
+    }
+
+    private function extractProfileFromLookupPayload(array $payload, string $lookup): ?array
+    {
+        $items = $payload['data'] ?? $payload['users'] ?? $payload['items'] ?? $payload['results'] ?? $payload;
+        if (isset($items['email']) || isset($items['username']) || isset($items['avatar_url'])) {
+            return $items;
+        }
+
+        if (!is_array($items)) {
+            return null;
+        }
+
+        foreach ($items as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $email = isset($item['email']) && is_string($item['email']) ? strtolower($item['email']) : null;
+            $username = isset($item['username']) && is_string($item['username']) ? strtolower($item['username']) : null;
+            if ($email === strtolower($lookup) || $username === strtolower($lookup)) {
+                return $item;
+            }
+        }
+
+        return null;
+    }
+
+    private function profileMatchesEmployee(array $profile, Employee $employee): bool
+    {
+        $profileEmail = $this->getProfileEmail($profile);
+        if ($profileEmail !== null) {
+            foreach ([$employee->getWorkEmail(), $employee->getOtherEmail()] as $email) {
+                if (is_string($email) && strtolower(trim($email)) === $profileEmail) {
+                    return true;
+                }
+            }
+        }
+
+        $user = $this->getUserService()->geUserDao()->getUserByEmpNumber($employee->getEmpNumber());
+        return $user instanceof User
+            && isset($profile['username'])
+            && is_string($profile['username'])
+            && strtolower($user->getUserName()) === strtolower(trim($profile['username']));
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getEmployeeLookupValues(Employee $employee): array
+    {
+        $values = [];
+        foreach ([$employee->getWorkEmail(), $employee->getOtherEmail()] as $email) {
+            if (is_string($email) && filter_var(trim($email), FILTER_VALIDATE_EMAIL)) {
+                $values[] = strtolower(trim($email));
+            }
+        }
+
+        $user = $this->getUserService()->geUserDao()->getUserByEmpNumber($employee->getEmpNumber());
+        if ($user instanceof User && trim($user->getUserName()) !== '') {
+            $values[] = strtolower(trim($user->getUserName()));
+        }
+
+        return array_values(array_unique($values));
     }
 
     /**

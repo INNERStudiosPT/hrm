@@ -46,6 +46,7 @@ use OrangeHRM\Framework\Http\Request;
 use OrangeHRM\Framework\Http\Response;
 use OrangeHRM\Recruitment\Api\CandidateAPI;
 use OrangeHRM\Recruitment\Service\CandidateService;
+use OrangeHRM\Recruitment\Service\InnerStudiosRecruitmentPortalService;
 use OrangeHRM\Recruitment\Traits\Service\CandidateServiceTrait;
 use OrangeHRM\Recruitment\Traits\Service\RecruitmentAttachmentServiceTrait;
 use OrangeHRM\Recruitment\Traits\Service\VacancyServiceTrait;
@@ -77,6 +78,7 @@ class ApplicantController extends AbstractController implements PublicController
      * @var ValidationDecorator|null
      */
     private ?ValidationDecorator $validationDecorator = null;
+    private ?InnerStudiosRecruitmentPortalService $innerStudiosPortalService = null;
 
     /**
      * @param Request $request
@@ -97,8 +99,9 @@ class ApplicantController extends AbstractController implements PublicController
         $this->beginTransaction();
         try {
             $vacancyId = $request->request->get(self::PARAMETER_VACANCY_ID);
-            $this->processTransaction($request, $attachment, $vacancyId);
+            $candidateVacancy = $this->processTransaction($request, $attachment, $vacancyId);
             $this->commitTransaction();
+            $this->getInnerStudiosPortalService()->sendApplicationConfirmation($candidateVacancy);
             return $this->redirect("/recruitmentApply/applyVacancy/id/$vacancyId?success=true");
         } catch (Exception $e) {
             $this->rollBackTransaction();
@@ -146,9 +149,9 @@ class ApplicantController extends AbstractController implements PublicController
      * @param Request $request
      * @param Base64Attachment $attachment
      * @param int $vacancyId
-     * @return void
+     * @return CandidateVacancy
      */
-    private function processTransaction(Request $request, Base64Attachment $attachment, int $vacancyId): void
+    private function processTransaction(Request $request, Base64Attachment $attachment, int $vacancyId): CandidateVacancy
     {
         $applicant = new Candidate();
         $this->setApplicant($applicant, $request);
@@ -177,6 +180,8 @@ class ApplicantController extends AbstractController implements PublicController
         $this->getRecruitmentAttachmentService()
             ->getRecruitmentAttachmentDao()
             ->saveCandidateAttachment($applicantAttachment);
+
+        return $applicantVacancy;
     }
 
     /**
@@ -314,5 +319,13 @@ class ApplicantController extends AbstractController implements PublicController
         $applicantAttachment->setFileType($resume->getFileType());
         $applicantAttachment->setFileSize($resume->getSize());
         $applicantAttachment->setFileContent($resume->getContent());
+    }
+
+    private function getInnerStudiosPortalService(): InnerStudiosRecruitmentPortalService
+    {
+        if (!$this->innerStudiosPortalService instanceof InnerStudiosRecruitmentPortalService) {
+            $this->innerStudiosPortalService = new InnerStudiosRecruitmentPortalService();
+        }
+        return $this->innerStudiosPortalService;
     }
 }

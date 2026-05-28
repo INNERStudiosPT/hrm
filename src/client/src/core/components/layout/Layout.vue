@@ -56,6 +56,11 @@
     </template>
     <template #user-actions>
       <li>
+        <a :href="myInfoUrl" role="menuitem" class="oxd-userdropdown-link">
+          My Info
+        </a>
+      </li>
+      <li>
         <a
           href="#"
           role="menuitem"
@@ -114,6 +119,7 @@ export default {
       baseUrl,
       '/api/v2/innerstudios/notifications',
     );
+    const myInfoUrl = `${baseUrl}/pim/viewMyDetails`;
 
     provide('permissions', readonly(props.permissions));
     provide(dateFormatKey, readonly(props.dateFormat));
@@ -184,6 +190,7 @@ export default {
       showNotifications,
       notificationsLoading,
       notificationsUrl,
+      myInfoUrl,
       notificationPreview,
       unreadNotificationsCount,
       unreadNotificationsLabel,

@@ -20,6 +20,10 @@
 namespace OrangeHRM\Recruitment\Api;
 
 use OrangeHRM\Core\Api\V2\RequestParams;
+use OrangeHRM\Core\Api\V2\Validator\ParamRule;
+use OrangeHRM\Core\Api\V2\Validator\ParamRuleCollection;
+use OrangeHRM\Core\Api\V2\Validator\Rule;
+use OrangeHRM\Core\Api\V2\Validator\Rules;
 use OrangeHRM\Entity\CandidateVacancy;
 use OrangeHRM\Entity\Employee;
 use OrangeHRM\Entity\WorkflowStateMachine;
@@ -65,10 +69,27 @@ class CandidateHiringAPI extends AbstractCandidateActionAPI
         return WorkflowStateMachine::RECRUITMENT_APPLICATION_ACTION_HIRE;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function getValidationRuleForUpdate(): ParamRuleCollection
+    {
+        $paramRuleCollection = parent::getValidationRuleForUpdate();
+        $paramRuleCollection->addParamValidation(
+            new ParamRule(
+                self::PARAMETER_SIGNED_DOCUMENT,
+                new Rule(Rules::BASE_64_ATTACHMENT)
+            )
+        );
+        return $paramRuleCollection;
+    }
+
     protected function afterCandidateAction(CandidateVacancy $candidateVacancy, ?Employee $employee): void
     {
-        $this->ensureInnerStudiosTables();
         $this->saveSignedDocument($candidateVacancy);
+
+        $portalService = new \OrangeHRM\Recruitment\Service\InnerStudiosRecruitmentPortalService();
+        $portalService->sendOnboarding($candidateVacancy);
 
         if (is_null($employee)) {
             return;
@@ -106,8 +127,28 @@ class CandidateHiringAPI extends AbstractCandidateActionAPI
             self::PARAMETER_SIGNED_DOCUMENT
         );
 
+        $this->getEntityManager()->getConnection()->executeStatement(
+            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_hire_document (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                candidate_id INT NOT NULL UNIQUE,
+                file_name VARCHAR(255) NOT NULL,
+                file_type VARCHAR(100) NOT NULL,
+                file_size INT NOT NULL,
+                file_content LONGBLOB NOT NULL,
+                uploaded_at DATETIME NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+        );
+
         if (is_null($attachment)) {
-            throw $this->getBadRequestException('Signed document is required');
+            $exists = (bool)$this->getEntityManager()->getConnection()->fetchOne(
+                'SELECT 1 FROM ohrm_innerstudios_hire_document WHERE candidate_id = :candidateId',
+                ['candidateId' => $candidateVacancy->getCandidate()->getId()]
+            );
+
+            if (!$exists) {
+                throw $this->getBadRequestException('Signed document is required');
+            }
+            return;
         }
 
         $this->getEntityManager()->getConnection()->executeStatement(
@@ -130,28 +171,4 @@ class CandidateHiringAPI extends AbstractCandidateActionAPI
         );
     }
 
-    private function ensureInnerStudiosTables(): void
-    {
-        $connection = $this->getEntityManager()->getConnection();
-        $connection->executeStatement(
-            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_offer (
-                candidate_id INT NOT NULL,
-                work_shift_id INT NULL,
-                worker_decides TINYINT(1) NOT NULL DEFAULT 0,
-                updated_at DATETIME NOT NULL,
-                PRIMARY KEY (candidate_id)
-            )'
-        );
-        $connection->executeStatement(
-            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_hire_document (
-                candidate_id INT NOT NULL,
-                file_name VARCHAR(255) NOT NULL,
-                file_type VARCHAR(255) NULL,
-                file_size INT NULL,
-                file_content LONGBLOB NOT NULL,
-                uploaded_at DATETIME NOT NULL,
-                PRIMARY KEY (candidate_id)
-            )'
-        );
-    }
 }
