@@ -30,12 +30,14 @@
                 v-if="awardWeek"
                 class="buzz-award-badge buzz-award-week"
                 title="Colaborador da Semana"
-              >⭐ Semana</span>
+                >⭐ Semana</span
+              >
               <span
                 v-if="awardMonth"
                 class="buzz-award-badge buzz-award-month"
                 title="Colaborador do Mês"
-              >🏆 Mês</span>
+                >🏆 Mês</span
+              >
             </oxd-text>
             <oxd-text tag="p" class="orangehrm-buzz-post-time">
               {{ postDateTime }}

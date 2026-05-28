@@ -34,8 +34,16 @@
       <oxd-grid-item v-for="(post, index) in posts" :key="post">
         <post-container
           :post="post"
-          :award-week="weekWinnerEmpNumber !== null && post.employee && post.employee.empNumber === weekWinnerEmpNumber"
-          :award-month="monthWinnerEmpNumber !== null && post.employee && post.employee.empNumber === monthWinnerEmpNumber"
+          :award-week="
+            weekWinnerEmpNumber !== null &&
+            post.employee &&
+            post.employee.empNumber === weekWinnerEmpNumber
+          "
+          :award-month="
+            monthWinnerEmpNumber !== null &&
+            post.employee &&
+            post.employee.empNumber === monthWinnerEmpNumber
+          "
           @edit="onEdit(index)"
           @delete="onDelete(index)"
         >
@@ -194,9 +202,12 @@ export default {
 
     const fetchAwards = async () => {
       try {
-        const res = await fetch('https://api.innerstudios.pt/v1/public/staff-awards', {
-          headers: {Accept: 'application/json'},
-        });
+        const res = await fetch(
+          'https://api.innerstudios.pt/v1/public/staff-awards',
+          {
+            headers: {Accept: 'application/json'},
+          },
+        );
         if (res.ok) {
           const data = await res.json();
           weekWinnerEmpNumber.value = data.week?.emp_number ?? null;

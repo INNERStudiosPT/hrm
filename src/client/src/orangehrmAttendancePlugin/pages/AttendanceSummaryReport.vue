@@ -89,16 +89,24 @@
               type="button"
               display-type="ghost"
               label="Exportar Excel"
+              style="
+                margin-left: 8px;
+                border: 1px solid #4caf50;
+                color: #4caf50;
+              "
               @click="exportToExcel"
-              style="margin-left: 8px; border: 1px solid #4caf50; color: #4caf50;"
             />
             <oxd-button
               v-if="hasData"
               type="button"
               display-type="ghost"
               label="Exportar PDF"
+              style="
+                margin-left: 8px;
+                border: 1px solid #f44336;
+                color: #f44336;
+              "
               @click="exportToPDF"
-              style="margin-left: 8px; border: 1px solid #f44336; color: #f44336;"
             />
           </oxd-form-actions>
         </oxd-form>
@@ -201,22 +209,30 @@ export default {
     });
 
     const exportToExcel = () => {
-      if (!reportsTableRef.value || !reportsTableRef.value.items || reportsTableRef.value.items.length === 0) {
+      if (
+        !reportsTableRef.value ||
+        !reportsTableRef.value.items ||
+        reportsTableRef.value.items.length === 0
+      ) {
         return;
       }
       const items = reportsTableRef.value.items;
       const headers = reportsTableRef.value.headers;
-      
-      const headerRow = headers.map(h => `"${h.name.replace(/"/g, '""')}"`).join(',');
-      const dataRows = items.map(item => {
-        return headers.map(h => {
-          const val = item[h.element || h.prop] || '';
-          return `"${String(val).replace(/"/g, '""')}"`;
-        }).join(',');
+
+      const headerRow = headers
+        .map((h) => `"${h.name.replace(/"/g, '""')}"`)
+        .join(',');
+      const dataRows = items.map((item) => {
+        return headers
+          .map((h) => {
+            const val = item[h.element || h.prop] || '';
+            return `"${String(val).replace(/"/g, '""')}"`;
+          })
+          .join(',');
       });
-      
-      const csvContent = "\uFEFF" + [headerRow, ...dataRows].join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+      const csvContent = '\uFEFF' + [headerRow, ...dataRows].join('\n');
+      const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
@@ -228,32 +244,39 @@ export default {
     };
 
     const exportToPDF = () => {
-      if (!reportsTableRef.value || !reportsTableRef.value.items || reportsTableRef.value.items.length === 0) {
+      if (
+        !reportsTableRef.value ||
+        !reportsTableRef.value.items ||
+        reportsTableRef.value.items.length === 0
+      ) {
         return;
       }
       const items = reportsTableRef.value.items;
       const headers = reportsTableRef.value.headers;
-      const totalDuration = reportsTableRef.value.response?.meta?.sum?.label || '0.00';
-      
+      const totalDuration =
+        reportsTableRef.value.response?.meta?.sum?.label || '0.00';
+
       const printWindow = window.open('', '_blank');
-      
+
       let tableHeadersHtml = '';
-      headers.forEach(h => {
+      headers.forEach((h) => {
         tableHeadersHtml += `<th style="padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: left; font-weight: 600; color: #4a5568;">${h.name}</th>`;
       });
-      
+
       let tableRowsHtml = '';
-      items.forEach(item => {
+      items.forEach((item) => {
         tableRowsHtml += '<tr style="border-bottom: 1px solid #edf2f7;">';
-        headers.forEach(h => {
+        headers.forEach((h) => {
           const val = item[h.element || h.prop] || '';
           tableRowsHtml += `<td style="padding: 12px; color: #2d3748;">${val}</td>`;
         });
         tableRowsHtml += '</tr>';
       });
-      
-      const dateRange = (filters.value.fromDate || '') + (filters.value.toDate ? ` a ${filters.value.toDate}` : '');
-      
+
+      const dateRange =
+        (filters.value.fromDate || '') +
+        (filters.value.toDate ? ` a ${filters.value.toDate}` : '');
+
       const htmlContent = `
         <html>
           <head>
@@ -312,8 +335,12 @@ export default {
               <div class="subtitle">OrangeHRM - INNER Studios</div>
             </div>
             <div class="info">
-              <div><strong>Filtro de Período:</strong> ${dateRange || 'Todo o período'}</div>
-              <div><strong>Data de Emissão:</strong> ${new Date().toLocaleDateString('pt-PT')}</div>
+              <div><strong>Filtro de Período:</strong> ${
+                dateRange || 'Todo o período'
+              }</div>
+              <div><strong>Data de Emissão:</strong> ${new Date().toLocaleDateString(
+                'pt-PT',
+              )}</div>
             </div>
             <table>
               <thead>
@@ -331,11 +358,11 @@ export default {
                 window.print();
                 setTimeout(function() { window.close(); }, 500);
               };
-            <\/script>
+            </${''}script>
           </body>
         </html>
       `;
-      
+
       printWindow.document.write(htmlContent);
       printWindow.document.close();
     };
@@ -352,4 +379,3 @@ export default {
   },
 };
 </script>
-

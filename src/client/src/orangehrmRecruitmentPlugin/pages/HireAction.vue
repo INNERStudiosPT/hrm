@@ -72,7 +72,10 @@
 </template>
 
 <script>
-import {required, shouldNotExceedCharLength} from '@/core/util/validation/rules';
+import {
+  required,
+  shouldNotExceedCharLength,
+} from '@/core/util/validation/rules';
 import FileUploadInput from '@/core/components/inputs/FileUploadInput';
 import CandidateActionLayout from '@/orangehrmRecruitmentPlugin/components/CandidateActionLayout';
 import {APIService} from '@/core/util/services/api.service';

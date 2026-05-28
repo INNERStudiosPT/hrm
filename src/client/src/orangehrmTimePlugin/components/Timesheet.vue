@@ -60,7 +60,7 @@
               :class="{
                 'orangehrm-timesheet-table-header-cell': true,
                 '--center': true,
-                '--weekend': day.isWeekend
+                '--weekend': day.isWeekend,
               }"
             >
               <span class="--day">
@@ -122,7 +122,7 @@
                 '--center': true,
                 '--duration-input': editable,
                 '--highlight-3': !editable && column.workday,
-                '--weekend': isDateWeekend(date)
+                '--weekend': isDateWeekend(date),
               }"
             >
               <oxd-icon-button
@@ -143,7 +143,10 @@
               />
               <span v-else>
                 <span
-                  v-if="getDuration(record.dates[date]) && getDuration(record.dates[date]) !== '00:00'"
+                  v-if="
+                    getDuration(record.dates[date]) &&
+                    getDuration(record.dates[date]) !== '00:00'
+                  "
                   class="orangehrm-timesheet-duration-active"
                 >
                   {{ getDuration(record.dates[date]) }}

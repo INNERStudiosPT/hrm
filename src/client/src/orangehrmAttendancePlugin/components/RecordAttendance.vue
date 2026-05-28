@@ -20,15 +20,34 @@
 <template>
   <div v-if="isForcedBreakActive" class="orangehrm-forced-break-container">
     <div class="orangehrm-forced-break-title">
-      <svg xmlns="http://www.w3.org/2000/svg" style="width: 1.5rem; height: 1.5rem; display: inline-block; vertical-align: middle; margin-right: 0.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        style="
+          width: 1.5rem;
+          height: 1.5rem;
+          display: inline-block;
+          vertical-align: middle;
+          margin-right: 0.25rem;
+        "
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
       </svg>
       Descanso Obrigatório de 1 Hora
     </div>
     <div class="orangehrm-forced-break-desc">
-      Atingiu o limite de <strong>4 horas e 30 minutos</strong> de trabalho contínuo. Por motivos de segurança e saúde laboral, é obrigatório realizar uma pausa de 1 hora antes de iniciar o próximo turno.
+      Atingiu o limite de <strong>4 horas e 30 minutos</strong> de trabalho
+      contínuo. Por motivos de segurança e saúde laboral, é obrigatório realizar
+      uma pausa de 1 hora antes de iniciar o próximo turno.
     </div>
-    
+
     <div class="orangehrm-timer-card">
       <div class="orangehrm-timer-text">
         {{ cooldownTimerString }}
@@ -279,7 +298,7 @@ export default {
           const {data} = response.data;
           this.latestRecord = data;
           this.attendanceRecord.previousRecord = data.punchIn;
-          
+
           this.checkForForcedBreak();
         }
       })
@@ -297,28 +316,25 @@ export default {
       clearInterval(this.cooldownInterval);
     }
   },
-  beforeDestroy() {
-    if (this.cooldownInterval) {
-      clearInterval(this.cooldownInterval);
-    }
-  },
   methods: {
     checkForForcedBreak() {
       if (!this.latestRecord || !this.latestRecord.punchIn) return;
-      
+
       const punchIn = this.latestRecord.punchIn;
       const punchOut = this.latestRecord.punchOut;
-      
+
       const punchInTime = new Date(`${punchIn.utcDate}T${punchIn.utcTime}Z`);
       const now = new Date();
-      
+
       if (!punchOut) {
         const elapsedMs = now.getTime() - punchInTime.getTime();
         const maxShiftMs = 4.5 * 60 * 60 * 1000;
-        
+
         if (elapsedMs >= maxShiftMs) {
           this.isForcedBreakActive = true;
-          this.cooldownEndTime = new Date(punchInTime.getTime() + maxShiftMs + 1 * 60 * 60 * 1000);
+          this.cooldownEndTime = new Date(
+            punchInTime.getTime() + maxShiftMs + 1 * 60 * 60 * 1000,
+          );
           this.autoPunchOut(punchIn, maxShiftMs);
         } else {
           const remainingMs = maxShiftMs - elapsedMs;
@@ -327,12 +343,16 @@ export default {
           }, remainingMs);
         }
       } else {
-        const punchOutTime = new Date(`${punchOut.utcDate}T${punchOut.utcTime}Z`);
+        const punchOutTime = new Date(
+          `${punchOut.utcDate}T${punchOut.utcTime}Z`,
+        );
         const shiftDurationMs = punchOutTime.getTime() - punchInTime.getTime();
         const limitMs = 4.5 * 60 * 60 * 1000 - 60000;
-        
+
         if (shiftDurationMs >= limitMs) {
-          const cooldownEnd = new Date(punchOutTime.getTime() + 1 * 60 * 60 * 1000);
+          const cooldownEnd = new Date(
+            punchOutTime.getTime() + 1 * 60 * 60 * 1000,
+          );
           if (now.getTime() < cooldownEnd.getTime()) {
             this.isForcedBreakActive = true;
             this.cooldownEndTime = cooldownEnd;
@@ -345,7 +365,7 @@ export default {
       const punchInTime = new Date(`${punchIn.utcDate}T${punchIn.utcTime}Z`);
       const exactOutTime = new Date(punchInTime.getTime() + maxShiftMs);
       const timezone = guessTimezone();
-      
+
       this.isLoading = true;
       this.http
         .request({
@@ -360,11 +380,13 @@ export default {
         })
         .then(() => {
           this.isForcedBreakActive = true;
-          this.cooldownEndTime = new Date(exactOutTime.getTime() + 1 * 60 * 60 * 1000);
+          this.cooldownEndTime = new Date(
+            exactOutTime.getTime() + 1 * 60 * 60 * 1000,
+          );
           this.startCooldownTimer();
         })
         .catch((err) => {
-          console.error('[RecordAttendance] Forced punch out failed:', err);
+          console.error('[RecordAttendance] Forced punch out failed:', err); // eslint-disable-line no-console
         })
         .finally(() => {
           this.isLoading = false;
@@ -374,11 +396,11 @@ export default {
       if (this.cooldownInterval) {
         clearInterval(this.cooldownInterval);
       }
-      
+
       const updateTimer = () => {
         const now = new Date().getTime();
         const distance = this.cooldownEndTime.getTime() - now;
-        
+
         if (distance <= 0) {
           clearInterval(this.cooldownInterval);
           this.isForcedBreakActive = false;
@@ -386,15 +408,19 @@ export default {
           reloadPage();
           return;
         }
-        
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        const hours = Math.floor(
+          (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+        );
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        
+
         const pad = (num) => String(num).padStart(2, '0');
-        this.cooldownTimerString = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        this.cooldownTimerString = `${pad(hours)}:${pad(minutes)}:${pad(
+          seconds,
+        )}`;
       };
-      
+
       updateTimer();
       this.cooldownInterval = setInterval(updateTimer, 1000);
     },
@@ -543,7 +569,12 @@ export default {
   display: block;
 }
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 </style>

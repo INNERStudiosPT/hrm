@@ -172,9 +172,17 @@
       </oxd-form>
 
       <!-- Onboarding details section -->
-      <div v-if="candidate.onboarding" class="orangehrm-onboarding-container" style="margin-top: 24px;">
+      <div
+        v-if="candidate.onboarding"
+        class="orangehrm-onboarding-container"
+        style="margin-top: 24px"
+      >
         <oxd-divider />
-        <oxd-text tag="h6" class="orangehrm-main-title" style="margin-top: 16px; margin-bottom: 16px;">
+        <oxd-text
+          tag="h6"
+          class="orangehrm-main-title"
+          style="margin-top: 16px; margin-bottom: 16px"
+        >
           Dados de Onboarding (Candidato)
         </oxd-text>
         <oxd-form-row>
@@ -218,7 +226,9 @@
           <oxd-grid :cols="1" class="orangehrm-full-width-grid">
             <oxd-grid-item>
               <oxd-input-field
-                :model-value="candidate.onboarding.final_meeting_availability || ''"
+                :model-value="
+                  candidate.onboarding.final_meeting_availability || ''
+                "
                 label="Disponibilidade para Reunião de Onboarding"
                 type="textarea"
                 disabled

@@ -81,7 +81,14 @@
 </template>
 
 <script>
-import {computed, onBeforeUnmount, onMounted, provide, readonly, ref} from 'vue';
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  provide,
+  readonly,
+  ref,
+} from 'vue';
 import About from '@/core/pages/About.vue';
 import {OxdIcon, OxdLayout} from '@ohrm/oxd';
 import {dateFormatKey} from '@/core/util/composable/useDateFormat';
@@ -144,7 +151,9 @@ export default {
       notificationsLoading.value = true;
       try {
         const response = await notificationsHttp.getAll();
-        const data = Array.isArray(response.data?.data) ? response.data.data : [];
+        const data = Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
         notifications.value = data.map(normalizeNotification);
       } catch (e) {
         notifications.value = [];
@@ -165,7 +174,8 @@ export default {
     };
 
     const unreadNotificationsCount = computed(() => {
-      return notifications.value.filter((notification) => !notification.read).length;
+      return notifications.value.filter((notification) => !notification.read)
+        .length;
     });
 
     const unreadNotificationsLabel = computed(() => {

@@ -17,7 +17,6 @@
  */
  -->
 
-
 <template>
   <div class="orangehrm-background-container">
     <!-- Premium Glassmorphic Performance Dashboard -->
@@ -31,8 +30,19 @@
         <!-- Card: Turnos e Assiduidade -->
         <div class="innerstudios-dash-card">
           <div class="innerstudios-card-header">
-            <svg class="icon --orange" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              class="icon --orange"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <h6>Turnos e Horas</h6>
           </div>
@@ -51,7 +61,14 @@
             </div>
             <div class="kpi-row">
               <span class="label">Conformidade de Descanso</span>
-              <span class="value" :class="kpiData.rest_compliance_score === 100 ? 'text-success' : 'text-warning'">
+              <span
+                class="value"
+                :class="
+                  kpiData.rest_compliance_score === 100
+                    ? 'text-success'
+                    : 'text-warning'
+                "
+              >
                 {{ kpiData.rest_compliance_score }}%
               </span>
             </div>
@@ -61,8 +78,19 @@
         <!-- Card: Tarefas e Produtividade -->
         <div class="innerstudios-dash-card">
           <div class="innerstudios-card-header">
-            <svg class="icon --purple" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            <svg
+              class="icon --purple"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+              />
             </svg>
             <h6>Tarefas e Produtividade</h6>
           </div>
@@ -82,7 +110,13 @@
             <div class="kpi-row">
               <span class="label">Velocidade (Média)</span>
               <span class="value">
-                {{ kpiData.resolution_velocity.High || kpiData.resolution_velocity.Medium || kpiData.resolution_velocity['3'] || kpiData.resolution_velocity['2'] || '0' }}h / tarefa
+                {{
+                  kpiData.resolution_velocity.High ||
+                  kpiData.resolution_velocity.Medium ||
+                  kpiData.resolution_velocity['3'] ||
+                  kpiData.resolution_velocity['2'] ||
+                  '0'
+                }}h / tarefa
               </span>
             </div>
           </div>
@@ -91,8 +125,19 @@
         <!-- Card: Crescimento & Referrals -->
         <div class="innerstudios-dash-card">
           <div class="innerstudios-card-header">
-            <svg class="icon --teal" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            <svg
+              class="icon --teal"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+              />
             </svg>
             <h6>Crescimento & Convites</h6>
           </div>
@@ -107,11 +152,20 @@
             </div>
             <div class="kpi-row">
               <span class="label">Taxa de Conversão</span>
-              <span class="value">{{ kpiData.referrals_conversion_rate }}%</span>
+              <span class="value"
+                >{{ kpiData.referrals_conversion_rate }}%</span
+              >
             </div>
             <div class="kpi-row">
               <span class="label">Triagem / Pipeline</span>
-              <span class="value">{{ kpiData.referral_stages.pending || kpiData.referral_stages.interview || 0 }} ativas</span>
+              <span class="value"
+                >{{
+                  kpiData.referral_stages.pending ||
+                  kpiData.referral_stages.interview ||
+                  0
+                }}
+                ativas</span
+              >
             </div>
           </div>
         </div>
@@ -119,9 +173,25 @@
         <!-- Card: Alocação de Tempo & Projetos -->
         <div class="innerstudios-dash-card">
           <div class="innerstudios-card-header">
-            <svg class="icon --indigo" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+            <svg
+              class="icon --indigo"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 3.055A9.003 9.003 0 1020.945 13H11V3.055z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"
+              />
             </svg>
             <h6>Projetos & Utilização</h6>
           </div>
@@ -130,18 +200,31 @@
               <span class="label">Utilização (InnerFX)</span>
               <span class="value --indigo">{{ kpiData.utility_rate }}%</span>
             </div>
-            
+
             <div class="projects-list">
-              <div v-for="proj in kpiData.projects_distribution" :key="proj.name" class="proj-item">
+              <div
+                v-for="proj in kpiData.projects_distribution"
+                :key="proj.name"
+                class="proj-item"
+              >
                 <div class="proj-info">
                   <span class="proj-name">{{ proj.name }}</span>
                   <span class="proj-hours">{{ proj.hours }}h</span>
                 </div>
                 <div class="proj-progress-bar">
-                  <div class="bar-fill" :style="{ width: calcProjPercent(proj.hours) + '%' }"></div>
+                  <div
+                    class="bar-fill"
+                    :style="{width: calcProjPercent(proj.hours) + '%'}"
+                  ></div>
                 </div>
               </div>
-              <div v-if="!kpiData.projects_distribution || kpiData.projects_distribution.length === 0" class="text-muted text-center pt-2">
+              <div
+                v-if="
+                  !kpiData.projects_distribution ||
+                  kpiData.projects_distribution.length === 0
+                "
+                class="text-muted text-center pt-2"
+              >
                 Nenhum tempo alocado em projetos.
               </div>
             </div>
@@ -153,12 +236,26 @@
       <div class="innerstudios-dashboard-bottom">
         <div class="wellbeing-banner">
           <div class="wellbeing-info">
-            <svg class="icon --green" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            <svg
+              class="icon --green"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
             </svg>
             <div class="wellbeing-text">
               <h6>Equilíbrio Laboral & Descanso</h6>
-              <p>Goza as suas férias e folgas regularmente para manter uma excelente saúde física e mental.</p>
+              <p>
+                Goza as suas férias e folgas regularmente para manter uma
+                excelente saúde física e mental.
+              </p>
             </div>
           </div>
           <div class="wellbeing-metrics">
@@ -333,23 +430,32 @@ export default {
   },
 
   beforeMount() {
-    const myselfHttp = new APIService(window.appGlobal.baseUrl, '/api/v2/pim/myself');
-    myselfHttp.getAll()
+    const myselfHttp = new APIService(
+      window.appGlobal.baseUrl,
+      '/api/v2/pim/myself',
+    );
+    myselfHttp
+      .getAll()
       .then((res) => {
         if (res && res.data && res.data.data) {
           const empNumber = res.data.data.empNumber;
           const contactHttp = new APIService(
             window.appGlobal.baseUrl,
-            `/api/v2/pim/employees/${empNumber}/contact-details`
+            `/api/v2/pim/employees/${empNumber}/contact-details`,
           );
           return contactHttp.getAll().then((contactRes) => {
             if (contactRes && contactRes.data && contactRes.data.data) {
               const cData = contactRes.data.data;
-              const email = cData.workEmail || cData.otherEmail || res.data.data.employeeId;
+              const email =
+                cData.workEmail || cData.otherEmail || res.data.data.employeeId;
               if (email) {
-                return fetch(`https://api.innerstudios.pt/v1/public/performance-kpis/${encodeURIComponent(email)}`)
-                  .then(kpiRes => kpiRes.json())
-                  .then(kpiData => {
+                return fetch(
+                  `https://api.innerstudios.pt/v1/public/performance-kpis/${encodeURIComponent(
+                    email,
+                  )}`,
+                )
+                  .then((kpiRes) => kpiRes.json())
+                  .then((kpiData) => {
                     if (kpiData && kpiData.resolved) {
                       this.kpiData = kpiData;
                     }
@@ -360,7 +466,7 @@ export default {
         }
       })
       .catch((err) => {
-        console.error('[MyTracker] Error loading custom KPIs:', err);
+        console.error('[MyTracker] Error loading custom KPIs:', err); // eslint-disable-line no-console
       });
   },
 
@@ -372,9 +478,12 @@ export default {
     },
     calcProjPercent(hours) {
       if (!this.kpiData || !this.kpiData.projects_distribution) return 0;
-      const total = this.kpiData.projects_distribution.reduce((acc, curr) => acc + curr.hours, 0);
-      return total > 0 ? (hours / total * 100) : 0;
-    }
+      const total = this.kpiData.projects_distribution.reduce(
+        (acc, curr) => acc + curr.hours,
+        0,
+      );
+      return total > 0 ? (hours / total) * 100 : 0;
+    },
   },
 };
 </script>
@@ -439,11 +548,21 @@ export default {
   height: 1.5rem;
 }
 
-.icon.--orange { color: #ff7b1a; }
-.icon.--purple { color: #8b5cf6; }
-.icon.--teal { color: #14b8a6; }
-.icon.--indigo { color: #6366f1; }
-.icon.--green { color: #10b981; }
+.icon.--orange {
+  color: #ff7b1a;
+}
+.icon.--purple {
+  color: #8b5cf6;
+}
+.icon.--teal {
+  color: #14b8a6;
+}
+.icon.--indigo {
+  color: #6366f1;
+}
+.icon.--green {
+  color: #10b981;
+}
 
 .innerstudios-card-body {
   display: flex;
@@ -470,16 +589,36 @@ export default {
   color: #1f2937;
 }
 
-.kpi-row .value.--orange { color: #e06000; }
-.kpi-row .value.--purple { color: #7c3aed; }
-.kpi-row .value.--teal { color: #0f766e; }
-.kpi-row .value.--indigo { color: #4338ca; }
+.kpi-row .value.--orange {
+  color: #e06000;
+}
+.kpi-row .value.--purple {
+  color: #7c3aed;
+}
+.kpi-row .value.--teal {
+  color: #0f766e;
+}
+.kpi-row .value.--indigo {
+  color: #4338ca;
+}
 
-.text-success { color: #10b981 !important; font-weight: 700; }
-.text-warning { color: #f59e0b !important; font-weight: 700; }
-.text-muted { color: #9ca3af !important; }
-.text-center { text-align: center; }
-.pt-2 { padding-top: 0.5rem; }
+.text-success {
+  color: #10b981 !important;
+  font-weight: 700;
+}
+.text-warning {
+  color: #f59e0b !important;
+  font-weight: 700;
+}
+.text-muted {
+  color: #9ca3af !important;
+}
+.text-center {
+  text-align: center;
+}
+.pt-2 {
+  padding-top: 0.5rem;
+}
 
 .projects-list {
   display: flex;
@@ -529,7 +668,11 @@ export default {
   gap: 1.5rem;
   padding: 1.5rem 2rem;
   border-radius: 1.25rem;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.04) 0%, rgba(5, 150, 105, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.04) 0%,
+    rgba(5, 150, 105, 0.08) 100%
+  );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(16, 185, 129, 0.15);

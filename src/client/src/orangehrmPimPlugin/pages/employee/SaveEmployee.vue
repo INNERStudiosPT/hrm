@@ -172,7 +172,7 @@ export default {
     },
   },
 
-  setup(props) {
+  setup() {
     const employee = ref({...employeeModel});
 
     const http = new APIService(

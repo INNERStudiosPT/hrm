@@ -63,7 +63,10 @@
 </template>
 
 <script>
-import {required, shouldNotExceedCharLength} from '@/core/util/validation/rules';
+import {
+  required,
+  shouldNotExceedCharLength,
+} from '@/core/util/validation/rules';
 import CandidateActionLayout from '@/orangehrmRecruitmentPlugin/components/CandidateActionLayout';
 import {APIService} from '@/core/util/services/api.service';
 import {navigate} from '@/core/util/helper/navigation';
@@ -112,21 +115,19 @@ export default {
     };
   },
   created() {
-    this.httpWorkShifts
-      .getAll({limit: 0})
-      .then((response) => {
-        const data = Array.isArray(response.data?.data) ? response.data.data : [];
-        this.workShiftOptions = [
-          ...data.map((item) => ({
-            id: item.id,
-            label: item.name,
-          })),
-          {
-            id: 'worker_decides',
-            label: 'Decidido pelo trabalhador',
-          },
-        ];
-      });
+    this.httpWorkShifts.getAll({limit: 0}).then((response) => {
+      const data = Array.isArray(response.data?.data) ? response.data.data : [];
+      this.workShiftOptions = [
+        ...data.map((item) => ({
+          id: item.id,
+          label: item.name,
+        })),
+        {
+          id: 'worker_decides',
+          label: 'Decidido pelo trabalhador',
+        },
+      ];
+    });
   },
   methods: {
     onSave() {
