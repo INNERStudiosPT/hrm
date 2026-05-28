@@ -55,6 +55,7 @@ steps:
         from_secret: github_token
     commands:
       - apk add --no-cache docker-cli docker-compose bash git
+      - git config --global --add safe.directory /app
       - cd /app
       - chmod +x ./deploy.sh
       - ./deploy.sh
