@@ -294,6 +294,7 @@ class I18NMessagesController extends AbstractFileController implements PublicCon
                         'performance.review_period' => 'Período de Avaliação',
                         'performance.due_date' => 'Data Limite',
                         'general.candidates' => 'Candidatos',
+                        'general.vacancies' => 'Vagas',
                         'recruitment.vacancy' => 'Vaga',
                         'recruitment.hiring_manager' => 'Gestor de Contratação',
                         'recruitment.candidate_name' => 'Nome do Candidato',

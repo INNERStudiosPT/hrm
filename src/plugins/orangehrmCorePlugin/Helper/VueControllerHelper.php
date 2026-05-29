@@ -226,6 +226,7 @@ class VueControllerHelper
                     'name' => 'Templates',
                     'url' => $this->getRequest()->getBaseUrl() . '/recruitment/innerstudiosTemplates',
                     'active' => $this->getRequest()->getPathInfo() === '/recruitment/innerstudiosTemplates',
+                    'children' => [],
                 ];
             }
             return $menuItems;
