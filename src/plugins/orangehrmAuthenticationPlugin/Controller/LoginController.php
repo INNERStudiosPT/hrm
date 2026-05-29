@@ -180,7 +180,7 @@ class LoginController extends AbstractVueController implements PublicControllerI
     {
         $baseUrl = 'https://hrm.innerstudios.pt' . $request->getBaseUrl();
         $returnUrl = $baseUrl . '/auth/login';
-        return 'https://auth.innerstudios.pt/auth?redirect=' . rawurlencode($returnUrl);
+        return 'https://auth.innerstudios.pt/auth?service=hrm&redirect=' . rawurlencode($returnUrl);
     }
 
     /**
