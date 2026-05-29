@@ -1,3 +1,6 @@
+labels:
+  backend: docker
+
 steps:
   - name: lint-node
     image: node:20-bookworm
