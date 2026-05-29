@@ -39,18 +39,38 @@ class InnerStudiosSsoService
         '/v1/auth/users/search',
     ];
 
+    private static ?array $requestProfileCache = null;
+
     /**
      * @return array<string, mixed>|null
      */
     public function getProfile(Request $request): ?array
     {
+        if (self::$requestProfileCache !== null) {
+            return self::$requestProfileCache;
+        }
+
         $token = $request->cookies->get(self::SESSION_COOKIE);
         if (!is_string($token) || trim($token) === '') {
             return null;
         }
 
+        // Try to get from session cache
         try {
-            $response = (new Client(['timeout' => 5, 'http_errors' => false]))->get(
+            $session = \OrangeHRM\Framework\ServiceContainer::getContainer()->get(\OrangeHRM\Framework\Services::SESSION);
+            if ($session->has('sso_profile_data')) {
+                $cached = $session->get('sso_profile_data');
+                if (is_array($cached) && ($cached['__timestamp'] ?? 0) > (time() - 300)) { // 5-minute session cache
+                    self::$requestProfileCache = $cached['data'];
+                    return self::$requestProfileCache;
+                }
+            }
+        } catch (Throwable $e) {
+            // Ignore session errors
+        }
+
+        try {
+            $response = (new Client(['timeout' => 2, 'http_errors' => false]))->get(
                 self::PROFILE_URL,
                 [
                     'headers' => [
@@ -72,7 +92,21 @@ class InnerStudiosSsoService
             return null;
         }
 
-        return isset($payload['data']) && is_array($payload['data']) ? $payload['data'] : $payload;
+        $data = isset($payload['data']) && is_array($payload['data']) ? $payload['data'] : $payload;
+
+        // Store in session and static cache
+        try {
+            $session = \OrangeHRM\Framework\ServiceContainer::getContainer()->get(\OrangeHRM\Framework\Services::SESSION);
+            $session->set('sso_profile_data', [
+                'data' => $data,
+                '__timestamp' => time()
+            ]);
+        } catch (Throwable $e) {
+            // Ignore session errors
+        }
+
+        self::$requestProfileCache = $data;
+        return $data;
     }
 
     /**
@@ -119,32 +153,133 @@ class InnerStudiosSsoService
 
     public function getAvatarUrlForEmployee(Request $request, Employee $employee): ?string
     {
+        $empNumber = $employee->getEmpNumber();
+        if ($empNumber === null) {
+            return null;
+        }
+
+        // Try to get from session cache
+        try {
+            $session = \OrangeHRM\Framework\ServiceContainer::getContainer()->get(\OrangeHRM\Framework\Services::SESSION);
+            if ($session->has('sso_avatar_cache')) {
+                $cache = $session->get('sso_avatar_cache');
+                if (is_array($cache) && isset($cache[$empNumber])) {
+                    $entry = $cache[$empNumber];
+                    if (($entry['__timestamp'] ?? 0) > (time() - 3600)) { // 1 hour cache
+                        return $entry['url'] !== '' ? $entry['url'] : null;
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            // Ignore
+        }
+
         $token = $request->cookies->get(self::SESSION_COOKIE);
         if (!is_string($token) || trim($token) === '') {
             return null;
         }
 
+        $resolvedUrl = null;
         $currentProfile = $this->getProfile($request);
         if (is_array($currentProfile) && $this->profileMatchesEmployee($currentProfile, $employee)) {
-            return $this->getAvatarUrl($currentProfile);
-        }
-
-        foreach ($this->getEmployeeLookupValues($employee) as $lookup) {
-            $profile = $this->lookupProfile($token, $lookup);
-            if (is_array($profile)) {
-                $avatarUrl = $this->getAvatarUrl($profile);
-                if ($avatarUrl !== null) {
-                    return $avatarUrl;
+            $resolvedUrl = $this->getAvatarUrl($currentProfile);
+        } else {
+            foreach ($this->getEmployeeLookupValues($employee) as $lookup) {
+                $profile = $this->lookupProfile($token, $lookup);
+                if (is_array($profile)) {
+                    $avatarUrl = $this->getAvatarUrl($profile);
+                    if ($avatarUrl !== null) {
+                        $resolvedUrl = $avatarUrl;
+                        break;
+                    }
                 }
             }
         }
 
-        return null;
+        // Save to session cache
+        try {
+            $session = \OrangeHRM\Framework\ServiceContainer::getContainer()->get(\OrangeHRM\Framework\Services::SESSION);
+            $cache = $session->get('sso_avatar_cache', []);
+            if (!is_array($cache)) {
+                $cache = [];
+            }
+            $cache[$empNumber] = [
+                'url' => $resolvedUrl ?? '',
+                '__timestamp' => time()
+            ];
+            $session->set('sso_avatar_cache', $cache);
+        } catch (Throwable $e) {
+            // Ignore
+        }
+
+        return $resolvedUrl;
+    }
+
+    /**
+     * Synchronize profile data with the user's employee record.
+     * Keeps both workEmail and otherEmail if there is an overlap.
+     *
+     * @param User $user
+     * @param array<string, mixed> $profile
+     * @return void
+     */
+    public function syncProfile(User $user, array $profile): void
+    {
+        $employee = $user->getEmployee();
+        if (!$employee instanceof Employee) {
+            return;
+        }
+
+        $email = $this->getProfileEmail($profile);
+        if ($email !== null) {
+            $workEmail = $employee->getWorkEmail() ? strtolower(trim($employee->getWorkEmail())) : null;
+            $otherEmail = $employee->getOtherEmail() ? strtolower(trim($employee->getOtherEmail())) : null;
+
+            if ($workEmail !== $email && $otherEmail !== $email) {
+                if (empty($workEmail)) {
+                    $employee->setWorkEmail($email);
+                } elseif (empty($otherEmail)) {
+                    $employee->setOtherEmail($email);
+                } else {
+                    // Both are filled and different from the profile email.
+                    // Overwrite otherEmail with the old workEmail, and set workEmail to the new profile email.
+                    // This preserves both unique emails in the profile!
+                    $employee->setOtherEmail($workEmail);
+                    $employee->setWorkEmail($email);
+                }
+            }
+        }
+
+        // Sync names
+        $firstName = $profile['first_name'] ?? $profile['firstName'] ?? null;
+        $lastName = $profile['last_name'] ?? $profile['lastName'] ?? null;
+
+        if ((empty($firstName) || empty($lastName)) && !empty($profile['display_name'])) {
+            $parts = explode(' ', trim($profile['display_name']));
+            if (empty($firstName)) {
+                $firstName = $parts[0];
+            }
+            if (empty($lastName)) {
+                $lastName = count($parts) > 1 ? implode(' ', array_slice($parts, 1)) : $parts[0];
+            }
+        }
+
+        if (!empty($firstName)) {
+            $employee->setFirstName(trim($firstName));
+        }
+        if (!empty($lastName)) {
+            $employee->setLastName(trim($lastName));
+        }
+
+        // Persist updates to the database
+        $em = \OrangeHRM\Framework\ServiceContainer::getContainer()->get(\OrangeHRM\Framework\Services::DOCTRINE);
+        $em->persist($employee);
+        $em->flush();
     }
 
     private function lookupProfile(string $token, string $lookup): ?array
     {
-        $client = new Client(['timeout' => 5, 'http_errors' => false]);
+        $client = new Client(['timeout' => 2, 'http_errors' => false]);
         foreach (self::USER_LOOKUP_PATHS as $path) {
             try {
                 $response = $client->get(

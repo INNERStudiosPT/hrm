@@ -36,6 +36,6 @@ class LogoutController extends AbstractController
         $session = $this->getContainer()->get(Services::SESSION);
         $session->invalidate();
         $returnUrl = 'https://hrm.innerstudios.pt' . $request->getBaseUrl() . '/auth/login';
-        return new RedirectResponse('https://auth.innerstudios.pt/auth?redirect=' . rawurlencode($returnUrl));
+        return new RedirectResponse('https://auth.innerstudios.pt/api/auth/logout?redirect=' . rawurlencode($returnUrl));
     }
 }

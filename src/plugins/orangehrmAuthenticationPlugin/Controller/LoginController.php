@@ -156,6 +156,13 @@ class LoginController extends AbstractVueController implements PublicControllerI
             );
         }
 
+        // Sync profile data to employee record
+        try {
+            $this->getInnerStudiosSsoService()->syncProfile($user, $profile);
+        } catch (Throwable $e) {
+            // Ignore minor sync errors so that login itself remains robust
+        }
+
         try {
             $success = $this->getAuthenticationService()->setCredentialsForUser($user);
             $this->getAuthUser()->setIsAuthenticated($success);

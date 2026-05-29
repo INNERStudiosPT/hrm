@@ -1,0 +1,13 @@
+.git
+.github
+.idea
+.junie
+node_modules
+**/node_modules
+vendor
+**/vendor
+src/cache/*
+src/log/*
+build
+devTools
+installer/upgrader

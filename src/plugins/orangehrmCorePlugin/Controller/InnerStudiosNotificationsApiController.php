@@ -28,7 +28,7 @@ class InnerStudiosNotificationsApiController extends AbstractController
             );
         }
 
-        $client = new Client(['timeout' => 8, 'http_errors' => false]);
+        $client = new Client(['timeout' => 1.5, 'http_errors' => false]);
         $errors = [];
 
         foreach (self::NOTIFICATION_PATHS as $path) {
