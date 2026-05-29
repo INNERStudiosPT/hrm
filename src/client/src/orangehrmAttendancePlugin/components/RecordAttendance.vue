@@ -307,6 +307,11 @@ export default {
           this.attendanceRecord.previousRecord?.offset,
         );
       })
+      .then(() => {
+        if (!this.attendanceRecordId && !this.isForcedBreakActive) {
+          this.onSave();
+        }
+      })
       .finally(() => {
         this.isLoading = false;
       });
@@ -451,6 +456,9 @@ export default {
                 date: this.date,
               })
             : reloadPage();
+        })
+        .catch(() => {
+          this.isLoading = false;
         });
     },
     setCurrentDateTime() {
