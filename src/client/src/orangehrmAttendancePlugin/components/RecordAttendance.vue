@@ -279,6 +279,11 @@ export default {
       };
     }
 
+    const justPunchedOut = sessionStorage.getItem('just_punched_out') === 'true';
+    if (justPunchedOut) {
+      sessionStorage.removeItem('just_punched_out');
+    }
+
     // fetch and set attendance record on initial load
     this.setCurrentDateTime()
       .then(() => {
@@ -308,7 +313,7 @@ export default {
         );
       })
       .then(() => {
-        if (!this.attendanceRecordId && !this.isForcedBreakActive) {
+        if (!this.attendanceRecordId && !this.isForcedBreakActive && !justPunchedOut) {
           this.onSave();
         }
       })
@@ -447,6 +452,9 @@ export default {
           },
         })
         .then(() => {
+          if (this.attendanceRecordId) {
+            sessionStorage.setItem('just_punched_out', 'true');
+          }
           return this.$toast.saveSuccess();
         })
         .then(() => {
