@@ -92,3 +92,252 @@
   height: 170px;
   padding: 0 1rem;
 }
+
+/* Custom premium stopwatch button */
+.orangehrm-attendance-card-action-btn {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(0%, -50%);
+  border: none;
+  outline: 5px solid $oxd-white-color !important;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: $oxd-primary-one-color;
+  color: #ffffff;
+
+  &:hover:not(:disabled) {
+    background-color: darken($oxd-primary-one-color, 10%);
+    transform: translate(0%, -50%) scale(1.08);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.95;
+  }
+
+  &.--cooldown {
+    background-color: #f59e0b !important; // Premium vibrant yellow
+    color: #ffffff !important;
+    animation: heartbeat 2s ease-in-out infinite !important;
+    
+    &:hover {
+      background-color: #d97706 !important;
+    }
+  }
+
+  &.--punched-in {
+    background-color: #10b981 !important; // Premium green/emerald for active / exit
+    
+    &:hover {
+      background-color: #059669 !important;
+    }
+  }
+
+  /* Micro-spinner animation inside the button */
+  .spinner {
+    animation: rotate 1.5s linear infinite;
+    width: 22px;
+    height: 22px;
+    display: block;
+    
+    & .path {
+      stroke: #ffffff;
+      stroke-linecap: round;
+      animation: dash 1.5s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes heartbeat {
+  0%, 100% {
+    transform: translate(0%, -50%) scale(1);
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    transform: translate(0%, -50%) scale(1.05);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.6);
+  }
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}
+
+/* Premium Modal Styles */
+.orangehrm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6); // Deep slate backdrop
+  backdrop-filter: blur(8px); // Beautiful glassmorphism blur
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 1rem;
+}
+
+.orangehrm-modal-card {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 28rem;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  font-family: 'Outfit', 'Inter', sans-serif;
+  animation: modal-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.orangehrm-modal-header {
+  padding: 2rem 2rem 1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  
+  .orangehrm-modal-icon-container {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+    background-color: rgba(245, 158, 11, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  
+  .orangehrm-modal-icon {
+    width: 2rem;
+    height: 2rem;
+    color: #d97706;
+  }
+  
+  h3 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin: 0;
+  }
+}
+
+.orangehrm-modal-body {
+  padding: 0 2rem;
+  text-align: center;
+  color: #4b5563;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  
+  p {
+    margin-bottom: 1rem;
+    
+    strong {
+      color: #1f2937;
+      font-weight: 700;
+    }
+  }
+  
+  .orangehrm-modal-timer {
+    background-color: rgba(245, 158, 11, 0.04);
+    border: 1px solid rgba(245, 158, 11, 0.15);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    
+    .timer-value {
+      font-family: monospace;
+      font-size: 2.25rem;
+      font-weight: 900;
+      color: #d97706;
+      letter-spacing: 0.05em;
+    }
+    
+    .timer-label {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
+    }
+  }
+}
+
+.orangehrm-modal-footer {
+  padding: 1rem 2rem 2rem 2rem;
+  
+  .orangehrm-modal-btn {
+    width: 100%;
+    padding: 0.875rem;
+    border-radius: 0.875rem;
+    border: none;
+    background-color: #d97706; // Amber warning color
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.2);
+    
+    &:hover {
+      background-color: #b45309;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px -1px rgba(217, 119, 6, 0.3);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Animations */
+@keyframes modal-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
