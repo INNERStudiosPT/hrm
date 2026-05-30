@@ -300,7 +300,7 @@ export default {
 
       // Fetch the safe server current datetime before performing the punch
       this.attendanceHttp
-        .request({method: 'GET', url: '/current-datetime'})
+        .request({method: 'GET', url: '/api/v2/attendance/current-datetime'})
         .then((res) => {
           const {utcDate, utcTime} = res.data.data;
           const currentDate = parseDate(
@@ -346,7 +346,7 @@ export default {
       const timezoneOffset = (currentDate.getTimezoneOffset() / 60) * -1;
 
       const fetchLatest = this.attendanceHttp
-        .request({method: 'GET', url: '/latest'})
+        .request({method: 'GET', url: '/api/v2/attendance/records/latest'})
         .then((res) => {
           if (res && res.data && res.data.data) {
             this.latestRecord = res.data.data;
