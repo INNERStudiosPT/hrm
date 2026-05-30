@@ -1,0 +1,73 @@
+labels:
+  backend: docker
+
+steps:
+  - name: lint-node
+    image: node:20-bookworm
+    when:
+      - event: [push, pull_request]
+    commands:
+      - corepack enable
+      - (cd src/client && (yarn install --immutable || yarn install) && yarn lint)
+      - (cd installer/client && (yarn install --immutable || yarn install) && yarn lint)
+      - (cd src/test/functional && (yarn install --immutable || yarn install) && yarn lint)
+
+  - name: lint-php
+    image: ubuntu:24.04
+    when:
+      - event: [push, pull_request]
+    commands:
+      - apt-get update
+      - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates php8.3-cli php8.3-mbstring php8.3-xml php8.3-curl php8.3-zip php8.3-intl php8.3-gd php8.3-ldap git curl unzip
+      - |
+        if ! command -v composer >/dev/null 2>&1; then
+          curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+        fi
+      - composer validate --strict -d src
+      - composer install -d src
+      - composer install -d devTools/core
+      - php devTools/core/console.php php-cs-fix --php php8.3
+      - php devTools/core/console.php generate-open-api-doc --throw
+      - git status --porcelain
+      - |
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Files changed with lint fix"
+          git diff
+          exit 1
+        fi
+
+  - name: docker-build
+    image: gcr.io/kaniko-project/executor:debug
+    when:
+      - event: [push, pull_request]
+    environment:
+      HOME: /kaniko
+    commands:
+      - /kaniko/executor --context . --dockerfile Dockerfile.hrm --no-push
+
+  - name: deploy
+    image: alpine:3
+    when:
+      - event: push
+        branch: main
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/fivem/apps/hrm:/app
+    environment:
+      COMPOSE_PROJECT_NAME: hrm
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - apk add --no-cache docker-cli docker-compose bash git
+      - git config --global --add safe.directory /app
+      - cd /app
+      - |
+        if [ -n "$GITHUB_TOKEN" ]; then
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/INNERStudiosPT/hrm.git"
+        fi
+      - git fetch origin main
+      - git reset --hard origin/main
+      - git clean -fd
+      - git remote set-url origin "https://github.com/INNERStudiosPT/hrm.git"
+      - chmod +x ./deploy.sh
+      - ./deploy.sh
