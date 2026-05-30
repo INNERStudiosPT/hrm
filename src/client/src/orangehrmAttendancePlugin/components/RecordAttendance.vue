@@ -279,7 +279,8 @@ export default {
       };
     }
 
-    const justPunchedOut = sessionStorage.getItem('just_punched_out') === 'true';
+    const justPunchedOut =
+      sessionStorage.getItem('just_punched_out') === 'true';
     if (justPunchedOut) {
       sessionStorage.removeItem('just_punched_out');
     }
@@ -313,7 +314,11 @@ export default {
         );
       })
       .then(() => {
-        if (!this.attendanceRecordId && !this.isForcedBreakActive && !justPunchedOut) {
+        if (
+          !this.attendanceRecordId &&
+          !this.isForcedBreakActive &&
+          !justPunchedOut
+        ) {
           this.onSave();
         }
       })
