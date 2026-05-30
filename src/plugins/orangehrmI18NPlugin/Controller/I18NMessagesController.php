@@ -280,7 +280,7 @@ class I18NMessagesController extends AbstractFileController implements PublicCon
                     'buzz.upcoming_anniversaries' => 'Próximos Aniversários de Trabalho',
                     'general.no_records_found' => 'Nenhum registo encontrado',
                     'general.directory' => 'Diretório',
-                    'general.n_records_found' => '{recordsCount,plural, =0{Nenhum registo encontrado} one{(1) Registo Encontrado} other{(#) Registos Encontrados}}',
+                    'general.n_records_found' => '{count,plural, =0{Nenhum registo encontrado} one{(1) Registo Encontrado} other{(#) Registos Encontrados}}',
                     'performance.employee_reviews' => 'Avaliações de Desempenho de Funcionários',
                     'pim.include' => 'Incluir',
                     'performance.review_status' => 'Estado da Avaliação',
@@ -300,6 +300,38 @@ class I18NMessagesController extends AbstractFileController implements PublicCon
                     'recruitment.job_offered' => 'Oferta de Emprego Realizada',
                     'recruitment.hired' => 'Contratado',
                     'recruitment.offer_declined' => 'Oferta Recusada',
+
+                    // New PIM Keys
+                    'pim.employee_information' => 'Informação do Funcionário',
+                    'pim.supervisor_name' => 'Nome do Supervisor',
+                    'pim.first_middle_name' => 'Nomes Próprios',
+                    'pim.supervisor' => 'Supervisor',
+                    'general.last_name' => 'Apelido',
+                    'general.first_name' => 'Primeiro Nome',
+                    'general.middle_name' => 'Segundo Nome',
+                    'pim.middle_name' => 'Segundo Nome',
+                    'pim.last_name' => 'Apelido',
+
+                    // New Leave Keys
+                    'leave.leave_period' => 'Período de Férias',
+                    'leave.start_month' => 'Mês de Início',
+
+                    // New Time Keys
+                    'time.select_employee' => 'Selecionar Funcionário',
+                    'time.timesheets_pending_action' => 'Folhas de Horas Pendentes de Ação',
+                    'time.timesheet_period' => 'Período da Folha de Horas',
+
+                    // New Dashboard Pending Action Plurals & Helpers
+                    'dashboard.no_pending_actions' => 'Não existem ações pendentes',
+                    'dashboard.n_pending_leave_request' => '{pendingActionsCount,plural, =0{Nenhum pedido de férias pendente} one{(1) Pedido de Férias para Aprovar} other{(#) Pedidos de Férias para Aprovar}}',
+                    'dashboard.n_pending_time_sheet' => '{pendingActionsCount,plural, =0{Nenhuma folha de horas pendente} one{(1) Folha de Horas para Aprovar} other{(#) Folhas de Horas para Aprovar}}',
+                    'dashboard.n_pending_performance_evaluate' => '{pendingActionsCount,plural, =0{Nenhuma avaliação de desempenho pendente} one{(1) Avaliação de Desempenho para Realizar} other{(#) Avaliações de Desempenho para Realizar}}',
+                    'dashboard.n_pending_self_review' => '{pendingActionsCount,plural, =0{Nenhuma auto-avaliação pendente} one{(1) Auto-avaliação para Realizar} other{(#) Auto-avaliações para Realizar}}',
+
+                    // Dropdowns / general
+                    'general.current_employees_only' => 'Apenas funcionários atuais',
+                    'general.current_and_past_employees' => 'Funcionários atuais e antigos',
+                    'general.past_employees_only' => 'Apenas funcionários antigos',
 
                     // Months
                     'general.january' => 'Janeiro',
