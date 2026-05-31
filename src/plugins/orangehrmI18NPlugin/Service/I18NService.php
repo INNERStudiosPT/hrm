@@ -139,23 +139,26 @@ class I18NService
      */
     protected function getTranslationCollection(string $langCode): TranslationCollection
     {
-        $results = $this->getI18NDao()->getAllTranslationMessagesByLangCode($langCode);
+        $jsonPath = __DIR__ . '/../messages/' . $langCode . '.json';
+        $fallbackPath = __DIR__ . '/../messages/en_US.json';
+
+        $data = [];
+        if (file_exists($jsonPath)) {
+            $data = json_decode(file_get_contents($jsonPath), true) ?: [];
+        } elseif (file_exists($fallbackPath)) {
+            $data = json_decode(file_get_contents($fallbackPath), true) ?: [];
+        }
 
         $keyAndSourceTarget = [];
         $keyAndTarget = [];
         $sourceAndTarget = [];
-        foreach ($results as $result) {
-            $unitId = $result['unitId'];
-            unset($result['unitId']);
-            // TODO:: directly use unit id
-            $unitId = is_numeric($unitId) ? str_replace(' ', '_', strtolower($result['source'])) : $unitId;
-
-            $group = isset($result['groupName']) ? $result['groupName'] . '.' : '';
-            unset($result['groupName']);
-            $key = $group . $unitId;
-            $keyAndSourceTarget[$key] = $result;
-            $keyAndTarget[$key] = $result['target'] ?? $result['source'];
-            $sourceAndTarget[$result['source']] = $result['target'] ?? $result['source'];
+        foreach ($data as $key => $target) {
+            $keyAndSourceTarget[$key] = [
+                'source' => $key,
+                'target' => $target
+            ];
+            $keyAndTarget[$key] = $target;
+            $sourceAndTarget[$key] = $target;
         }
         return new TranslationCollection($keyAndSourceTarget, $keyAndTarget, $sourceAndTarget);
     }
