@@ -4,10 +4,10 @@ namespace OrangeHRM\Recruitment\Service;
 
 use DateInterval;
 use DateTimeImmutable;
+use OrangeHRM\Core\Dto\Base64Attachment;
 use OrangeHRM\Core\Service\EmailService;
 use OrangeHRM\Core\Traits\LoggerTrait;
 use OrangeHRM\Core\Traits\ORM\EntityManagerHelperTrait;
-use OrangeHRM\Core\Dto\Base64Attachment;
 use OrangeHRM\Entity\CandidateVacancy;
 use OrangeHRM\Entity\WorkflowStateMachine;
 
@@ -664,7 +664,7 @@ HTML;
     private function ensureSchema(): void
     {
         $connection = $this->getConnection();
-        
+
         if (!$this->tableExists('ohrm_innerstudios_recruitment_public_token')) {
             $connection->executeStatement(
                 'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_public_token (
