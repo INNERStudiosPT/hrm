@@ -54,9 +54,11 @@ export default {
     display: flex;
   }
   &-item {
-    height: 35px;
-    line-height: 35px;
-    padding: 0rem 1rem;
+    min-height: 35px;
+    line-height: 1.4;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
     border-radius: 0.85rem;
     flex: 100%;
     color: $oxd-interface-gray-darken-1-color;
@@ -78,7 +80,7 @@ export default {
       margin-right: unset;
       margin-bottom: 0.25rem;
       background-color: unset;
-      white-space: wrap;
+      white-space: normal;
       &.--active,
       &:hover {
         background-color: $oxd-background-pastel-white-color;
