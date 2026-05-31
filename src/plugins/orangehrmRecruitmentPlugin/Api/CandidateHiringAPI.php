@@ -120,6 +120,19 @@ class CandidateHiringAPI extends AbstractCandidateActionAPI
         );
     }
 
+    private function tableExists(string $tableName): bool
+    {
+        try {
+            $result = $this->getEntityManager()->getConnection()->fetchOne(
+                "SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :tableName LIMIT 1",
+                ['tableName' => $tableName]
+            );
+            return (bool)$result;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
     private function saveSignedDocument(CandidateVacancy $candidateVacancy): void
     {
         $attachment = $this->getRequestParams()->getAttachmentOrNull(
@@ -127,17 +140,19 @@ class CandidateHiringAPI extends AbstractCandidateActionAPI
             self::PARAMETER_SIGNED_DOCUMENT
         );
 
-        $this->getEntityManager()->getConnection()->executeStatement(
-            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_hire_document (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                candidate_id INT NOT NULL UNIQUE,
-                file_name VARCHAR(255) NOT NULL,
-                file_type VARCHAR(100) NOT NULL,
-                file_size INT NOT NULL,
-                file_content LONGBLOB NOT NULL,
-                uploaded_at DATETIME NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
-        );
+        if (!$this->tableExists('ohrm_innerstudios_hire_document')) {
+            $this->getEntityManager()->getConnection()->executeStatement(
+                'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_hire_document (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    candidate_id INT NOT NULL UNIQUE,
+                    file_name VARCHAR(255) NOT NULL,
+                    file_type VARCHAR(100) NOT NULL,
+                    file_size INT NOT NULL,
+                    file_content LONGBLOB NOT NULL,
+                    uploaded_at DATETIME NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+            );
+        }
 
         if (is_null($attachment)) {
             $exists = (bool)$this->getEntityManager()->getConnection()->fetchOne(

@@ -648,92 +648,126 @@ HTML;
         );
     }
 
+    private function tableExists(string $tableName): bool
+    {
+        try {
+            $result = $this->getConnection()->fetchOne(
+                "SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :tableName LIMIT 1",
+                ['tableName' => $tableName]
+            );
+            return (bool)$result;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
     private function ensureSchema(): void
     {
         $connection = $this->getConnection();
-        $connection->executeStatement(
-            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_public_token (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                token_hash CHAR(64) NOT NULL UNIQUE,
-                type VARCHAR(32) NOT NULL,
-                candidate_id INT NOT NULL,
-                vacancy_id INT NULL,
-                expires_at DATETIME NOT NULL,
-                used_at DATETIME NULL,
-                metadata LONGTEXT NULL,
-                created_at DATETIME NOT NULL,
-                INDEX idx_innerstudios_token_lookup (type, candidate_id, vacancy_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
-        );
-        $connection->executeStatement(
-            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_candidate_onboarding (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                candidate_id INT NOT NULL UNIQUE,
-                vacancy_id INT NULL,
-                full_name VARCHAR(255) NULL,
-                address TEXT NULL,
-                citizen_card VARCHAR(100) NULL,
-                nif VARCHAR(50) NULL,
-                team_manager_emp_number INT NULL,
-                final_meeting_availability TEXT NULL,
-                details_completed_at DATETIME NULL,
-                contract_requested_at DATETIME NULL,
-                contract_uploaded_at DATETIME NULL,
-                onboarding_sent_at DATETIME NULL,
-                created_at DATETIME NOT NULL,
-                updated_at DATETIME NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
-        );
-        $connection->executeStatement(
-            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_email_log (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                event_key VARCHAR(190) NOT NULL UNIQUE,
-                recipient_email VARCHAR(255) NOT NULL,
-                subject VARCHAR(255) NOT NULL,
-                status VARCHAR(32) NOT NULL,
-                error_message TEXT NULL,
-                created_at DATETIME NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
-        );
-        $connection->executeStatement(
-            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_agenda_log (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                candidate_id INT NOT NULL,
-                context VARCHAR(64) NOT NULL,
-                status VARCHAR(32) NOT NULL,
-                error_message TEXT NULL,
-                created_at DATETIME NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
-        );
-        $connection->executeStatement(
-            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_template (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                file_name VARCHAR(255) NOT NULL,
-                file_type VARCHAR(100) NOT NULL,
-                file_size INT NOT NULL,
-                file_content LONGBLOB NOT NULL,
-                updated_at DATETIME NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
-        );
-        $connection->executeStatement(
-            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_hire_document (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                candidate_id INT NOT NULL UNIQUE,
-                file_name VARCHAR(255) NOT NULL,
-                file_type VARCHAR(100) NOT NULL,
-                file_size INT NOT NULL,
-                file_content LONGBLOB NOT NULL,
-                uploaded_at DATETIME NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
-        );
-        $connection->executeStatement(
-            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_offer (
-                candidate_id INT NOT NULL PRIMARY KEY,
-                work_shift_id INT NULL,
-                worker_decides TINYINT(1) NOT NULL DEFAULT 0,
-                updated_at DATETIME NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
-        );
+        
+        if (!$this->tableExists('ohrm_innerstudios_recruitment_public_token')) {
+            $connection->executeStatement(
+                'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_public_token (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    token_hash CHAR(64) NOT NULL UNIQUE,
+                    type VARCHAR(32) NOT NULL,
+                    candidate_id INT NOT NULL,
+                    vacancy_id INT NULL,
+                    expires_at DATETIME NOT NULL,
+                    used_at DATETIME NULL,
+                    metadata LONGTEXT NULL,
+                    created_at DATETIME NOT NULL,
+                    INDEX idx_innerstudios_token_lookup (type, candidate_id, vacancy_id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+            );
+        }
+
+        if (!$this->tableExists('ohrm_innerstudios_candidate_onboarding')) {
+            $connection->executeStatement(
+                'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_candidate_onboarding (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    candidate_id INT NOT NULL UNIQUE,
+                    vacancy_id INT NULL,
+                    full_name VARCHAR(255) NULL,
+                    address TEXT NULL,
+                    citizen_card VARCHAR(100) NULL,
+                    nif VARCHAR(50) NULL,
+                    team_manager_emp_number INT NULL,
+                    final_meeting_availability TEXT NULL,
+                    details_completed_at DATETIME NULL,
+                    contract_requested_at DATETIME NULL,
+                    contract_uploaded_at DATETIME NULL,
+                    onboarding_sent_at DATETIME NULL,
+                    created_at DATETIME NOT NULL,
+                    updated_at DATETIME NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+            );
+        }
+
+        if (!$this->tableExists('ohrm_innerstudios_recruitment_email_log')) {
+            $connection->executeStatement(
+                'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_email_log (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    event_key VARCHAR(190) NOT NULL UNIQUE,
+                    recipient_email VARCHAR(255) NOT NULL,
+                    subject VARCHAR(255) NOT NULL,
+                    status VARCHAR(32) NOT NULL,
+                    error_message TEXT NULL,
+                    created_at DATETIME NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+            );
+        }
+
+        if (!$this->tableExists('ohrm_innerstudios_recruitment_agenda_log')) {
+            $connection->executeStatement(
+                'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_agenda_log (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    candidate_id INT NOT NULL,
+                    context VARCHAR(64) NOT NULL,
+                    status VARCHAR(32) NOT NULL,
+                    error_message TEXT NULL,
+                    created_at DATETIME NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+            );
+        }
+
+        if (!$this->tableExists('ohrm_innerstudios_recruitment_template')) {
+            $connection->executeStatement(
+                'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_template (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    file_name VARCHAR(255) NOT NULL,
+                    file_type VARCHAR(100) NOT NULL,
+                    file_size INT NOT NULL,
+                    file_content LONGBLOB NOT NULL,
+                    updated_at DATETIME NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+            );
+        }
+
+        if (!$this->tableExists('ohrm_innerstudios_hire_document')) {
+            $connection->executeStatement(
+                'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_hire_document (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    candidate_id INT NOT NULL UNIQUE,
+                    file_name VARCHAR(255) NOT NULL,
+                    file_type VARCHAR(100) NOT NULL,
+                    file_size INT NOT NULL,
+                    file_content LONGBLOB NOT NULL,
+                    uploaded_at DATETIME NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+            );
+        }
+
+        if (!$this->tableExists('ohrm_innerstudios_recruitment_offer')) {
+            $connection->executeStatement(
+                'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_offer (
+                    candidate_id INT NOT NULL PRIMARY KEY,
+                    work_shift_id INT NULL,
+                    worker_decides TINYINT(1) NOT NULL DEFAULT 0,
+                    updated_at DATETIME NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+            );
+        }
     }
 
     private function getConnection()

@@ -108,6 +108,11 @@ class PIMLeftMenuService
             'module' => 'pim',
             'data_groups' => ['membership', 'membership_attachment', 'membership_custom_fields'],
             'label' => 'Memberships'
+        ],
+        'viewWorkingSchedule' => [
+            'module' => 'pim',
+            'data_groups' => ['personal_information', 'personal_attachment', 'personal_custom_fields'],
+            'label' => 'Working Schedule'
         ]
     ];
 

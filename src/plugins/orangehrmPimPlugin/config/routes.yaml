@@ -444,6 +444,45 @@ apiv2_pim_employees_work_shift:
   requirements:
     empNumber: '\d+'
 
+apiv2_pim_employee_working_schedule:
+  path: /api/v2/pim/employees/{empNumber}/working-schedule
+  controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
+  methods: [ GET ]
+  defaults:
+    _key: empNumber
+    _api: OrangeHRM\Pim\Api\EmployeeWorkingScheduleAPI
+  requirements:
+    empNumber: '\d+'
+
+apiv2_pim_employee_working_schedule_request:
+  path: /api/v2/pim/employees/{empNumber}/working-schedule/request
+  controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
+  methods: [ POST ]
+  defaults:
+    _api: OrangeHRM\Pim\Api\EmployeeWorkingScheduleAPI
+  requirements:
+    empNumber: '\d+'
+
+apiv2_pim_employee_working_schedule_config:
+  path: /api/v2/pim/employees/{empNumber}/working-schedule/config
+  controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
+  methods: [ PUT ]
+  defaults:
+    _api: OrangeHRM\Pim\Api\EmployeeWorkingScheduleAPI
+  requirements:
+    empNumber: '\d+'
+
+apiv2_pim_employee_working_schedule_request_resolve:
+  path: /api/v2/pim/employees/{empNumber}/working-schedule/request/{requestId}
+  controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
+  methods: [ PUT ]
+  defaults:
+    _api: OrangeHRM\Pim\Api\EmployeeWorkingScheduleAPI
+  requirements:
+    empNumber: '\d+'
+    requestId: '\d+'
+
+
 apiv2_pim_employees_import:
   path: /api/v2/pim/csv-import
   controller: OrangeHRM\Core\Controller\Rest\V2\GenericRestController::handle
@@ -665,6 +704,12 @@ pim_employee_tax_exemption:
   path: /pim/viewUsTaxExemptions/empNumber/{empNumber}
   controller: OrangeHRM\Pim\Controller\EmpUsTaxExemptionController::handle
   methods: [ GET ]
+
+pim_employee_working_schedule:
+  path: /pim/viewWorkingSchedule/empNumber/{empNumber}
+  controller: OrangeHRM\Pim\Controller\EmployeeWorkingScheduleController::handle
+  methods: [ GET ]
+
 
 pim_employee_csv_import:
   path: /pim/pimCsvImport

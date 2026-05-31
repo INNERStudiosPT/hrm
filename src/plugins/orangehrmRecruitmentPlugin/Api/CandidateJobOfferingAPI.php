@@ -95,6 +95,19 @@ class CandidateJobOfferingAPI extends AbstractCandidateActionAPI
         return $paramRuleCollection;
     }
 
+    private function tableExists(string $tableName): bool
+    {
+        try {
+            $result = $this->getEntityManager()->getConnection()->fetchOne(
+                "SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :tableName LIMIT 1",
+                ['tableName' => $tableName]
+            );
+            return (bool)$result;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
     protected function afterCandidateAction(CandidateVacancy $candidateVacancy, ?\OrangeHRM\Entity\Employee $employee): void
     {
         $workerDecides = $this->getRequestParams()->getBooleanOrNull(
@@ -110,14 +123,16 @@ class CandidateJobOfferingAPI extends AbstractCandidateActionAPI
             throw $this->getBadRequestException('Work shift is required');
         }
 
-        $this->getEntityManager()->getConnection()->executeStatement(
-            'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_offer (
-                candidate_id INT NOT NULL PRIMARY KEY,
-                work_shift_id INT NULL,
-                worker_decides TINYINT(1) NOT NULL DEFAULT 0,
-                updated_at DATETIME NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
-        );
+        if (!$this->tableExists('ohrm_innerstudios_recruitment_offer')) {
+            $this->getEntityManager()->getConnection()->executeStatement(
+                'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_offer (
+                    candidate_id INT NOT NULL PRIMARY KEY,
+                    work_shift_id INT NULL,
+                    worker_decides TINYINT(1) NOT NULL DEFAULT 0,
+                    updated_at DATETIME NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+            );
+        }
 
         $this->getEntityManager()->getConnection()->executeStatement(
             'INSERT INTO ohrm_innerstudios_recruitment_offer
