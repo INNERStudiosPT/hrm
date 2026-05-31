@@ -18,7 +18,9 @@
     :allowed-file-types="allowedFileTypes"
     :max-file-size="maxFileSize"
   >
-    <div class="orangehrm-horizontal-padding orangehrm-vertical-padding working-schedule-container">
+    <div
+      class="orangehrm-horizontal-padding orangehrm-vertical-padding working-schedule-container"
+    >
       <oxd-text tag="h6" class="orangehrm-main-title">
         {{ $t('pim.working_schedule') || 'Working Schedule' }}
       </oxd-text>
@@ -36,18 +38,29 @@
           </div>
           <div class="card-details">
             <oxd-text tag="h5" class="card-title">
-              {{ $t('working_schedule.current_assigned_shift') || 'Current Assigned Shift' }}
+              {{
+                $t('working_schedule.current_assigned_shift') ||
+                'Current Assigned Shift'
+              }}
             </oxd-text>
             <div v-if="currentShift" class="shift-info">
-              <oxd-text tag="p" class="shift-name">{{ currentShift.name }}</oxd-text>
+              <oxd-text tag="p" class="shift-name">{{
+                currentShift.name
+              }}</oxd-text>
               <oxd-text tag="p" class="shift-hours">
                 {{ currentShift.startTime }} - {{ currentShift.endTime }}
-                <span class="hours-badge">({{ currentShift.hoursPerDay }} {{ $t('working_schedule.hours_day') || 'hrs/day' }})</span>
+                <span class="hours-badge"
+                  >({{ currentShift.hoursPerDay }}
+                  {{ $t('working_schedule.hours_day') || 'hrs/day' }})</span
+                >
               </oxd-text>
             </div>
             <div v-else class="no-shift-info">
               <oxd-text tag="p" class="info-alert-text">
-                {{ $t('working_schedule.no_shift_assigned') || 'No working shift assigned yet.' }}
+                {{
+                  $t('working_schedule.no_shift_assigned') ||
+                  'No working shift assigned yet.'
+                }}
               </oxd-text>
             </div>
           </div>
@@ -61,12 +74,21 @@
             </oxd-text>
             <oxd-form-row class="switch-row">
               <oxd-text tag="p" class="switch-label">
-                {{ $t('working_schedule.allow_employee_customization') || 'Defined by worker (Allow customization)' }}
+                {{
+                  $t('working_schedule.allow_employee_customization') ||
+                  'Defined by worker (Allow customization)'
+                }}
               </oxd-text>
-              <oxd-switch-input v-model="isCustomizable" @update:model-value="toggleCustomizable" />
+              <oxd-switch-input
+                v-model="isCustomizable"
+                @update:model-value="toggleCustomizable"
+              />
             </oxd-form-row>
             <oxd-text tag="p" class="config-help-text">
-              {{ $t('working_schedule.config_help') || 'Enable this option to allow the employee to submit work schedule change requests for your approval.' }}
+              {{
+                $t('working_schedule.config_help') ||
+                'Enable this option to allow the employee to submit work schedule change requests for your approval.'
+              }}
             </oxd-text>
           </div>
         </div>
@@ -79,25 +101,46 @@
           <div class="card-details">
             <div class="pending-badge-header">
               <oxd-text tag="h5" class="card-title">
-                {{ $t('working_schedule.pending_request') || 'Pending Change Request' }}
+                {{
+                  $t('working_schedule.pending_request') ||
+                  'Pending Change Request'
+                }}
               </oxd-text>
-              <span class="status-badge --pending">{{ $t('working_schedule.status_pending') || 'Pending Approval' }}</span>
+              <span class="status-badge --pending">{{
+                $t('working_schedule.status_pending') || 'Pending Approval'
+              }}</span>
             </div>
 
             <div class="request-details-grid">
               <div class="request-detail-item">
-                <oxd-text tag="p" class="detail-label">{{ $t('working_schedule.proposed_shift') || 'Proposed Shift' }}</oxd-text>
+                <oxd-text tag="p" class="detail-label">{{
+                  $t('working_schedule.proposed_shift') || 'Proposed Shift'
+                }}</oxd-text>
                 <oxd-text tag="p" class="detail-value">
-                  {{ pendingRequest.workShift.name }} ({{ pendingRequest.workShift.startTime }} - {{ pendingRequest.workShift.endTime }})
+                  {{ pendingRequest.workShift.name }} ({{
+                    pendingRequest.workShift.startTime
+                  }}
+                  - {{ pendingRequest.workShift.endTime }})
                 </oxd-text>
               </div>
               <div class="request-detail-item">
-                <oxd-text tag="p" class="detail-label">{{ $t('working_schedule.submitted_on') || 'Submitted On' }}</oxd-text>
-                <oxd-text tag="p" class="detail-value">{{ pendingRequest.createdAt }}</oxd-text>
+                <oxd-text tag="p" class="detail-label">{{
+                  $t('working_schedule.submitted_on') || 'Submitted On'
+                }}</oxd-text>
+                <oxd-text tag="p" class="detail-value">{{
+                  pendingRequest.createdAt
+                }}</oxd-text>
               </div>
-              <div v-if="pendingRequest.reason" class="request-detail-item --full-width">
-                <oxd-text tag="p" class="detail-label">{{ $t('working_schedule.reason') || 'Reason / Justification' }}</oxd-text>
-                <oxd-text tag="p" class="detail-value reason-text">{{ pendingRequest.reason }}</oxd-text>
+              <div
+                v-if="pendingRequest.reason"
+                class="request-detail-item --full-width"
+              >
+                <oxd-text tag="p" class="detail-label">{{
+                  $t('working_schedule.reason') || 'Reason / Justification'
+                }}</oxd-text>
+                <oxd-text tag="p" class="detail-value reason-text">{{
+                  pendingRequest.reason
+                }}</oxd-text>
               </div>
             </div>
 
@@ -121,16 +164,25 @@
             </div>
             <div v-else class="employee-pending-note">
               <oxd-text tag="p">
-                {{ $t('working_schedule.employee_pending_note') || 'Your request is currently being reviewed by an administrator.' }}
+                {{
+                  $t('working_schedule.employee_pending_note') ||
+                  'Your request is currently being reviewed by an administrator.'
+                }}
               </oxd-text>
             </div>
           </div>
         </div>
 
         <!-- Section 4: Employee Submit Change Request Form -->
-        <div v-if="isSelf && isCustomizable && !pendingRequest" class="schedule-card request-form-card">
+        <div
+          v-if="isSelf && isCustomizable && !pendingRequest"
+          class="schedule-card request-form-card"
+        >
           <oxd-text tag="h5" class="card-title">
-            {{ $t('working_schedule.request_change_title') || 'Submit Schedule Change Request' }}
+            {{
+              $t('working_schedule.request_change_title') ||
+              'Submit Schedule Change Request'
+            }}
           </oxd-text>
           <oxd-form @submit-valid="submitRequest">
             <oxd-form-row>
@@ -139,7 +191,10 @@
                   <oxd-input-field
                     v-model="newRequest.workShiftId"
                     type="select"
-                    :label="$t('working_schedule.preferred_shift') || 'Preferred Work Shift'"
+                    :label="
+                      $t('working_schedule.preferred_shift') ||
+                      'Preferred Work Shift'
+                    "
                     :options="normalizedShifts"
                     :rules="[rules.required]"
                   />
@@ -153,8 +208,14 @@
                   <oxd-input-field
                     v-model="newRequest.reason"
                     type="textarea"
-                    :label="$t('working_schedule.reason_label') || 'Reason / Justification'"
-                    :placeholder="$t('working_schedule.reason_placeholder') || 'Provide details about why you need this schedule change...'"
+                    :label="
+                      $t('working_schedule.reason_label') ||
+                      'Reason / Justification'
+                    "
+                    :placeholder="
+                      $t('working_schedule.reason_placeholder') ||
+                      'Provide details about why you need this schedule change...'
+                    "
                     :rules="[rules.required, rules.maxLength]"
                   />
                 </oxd-grid-item>
@@ -175,16 +236,25 @@
         </div>
 
         <!-- Section 5: Schedule Locked Alert for non-customizable employees -->
-        <div v-if="isSelf && !isCustomizable && !pendingRequest" class="schedule-card locked-schedule-card">
+        <div
+          v-if="isSelf && !isCustomizable && !pendingRequest"
+          class="schedule-card locked-schedule-card"
+        >
           <div class="card-header-icon locked-icon">
             <oxd-icon name="lock" />
           </div>
           <div class="card-details">
             <oxd-text tag="h5" class="card-title locked-title">
-              {{ $t('working_schedule.locked_title') || 'Schedule Managed by Administrator' }}
+              {{
+                $t('working_schedule.locked_title') ||
+                'Schedule Managed by Administrator'
+              }}
             </oxd-text>
             <oxd-text tag="p" class="locked-desc">
-              {{ $t('working_schedule.locked_desc') || 'Your work schedule customization is currently disabled. Please contact your administrator if you need to make any adjustments to your working hours.' }}
+              {{
+                $t('working_schedule.locked_desc') ||
+                'Your work schedule customization is currently disabled. Please contact your administrator if you need to make any adjustments to your working hours.'
+              }}
             </oxd-text>
           </div>
         </div>
@@ -197,7 +267,10 @@
 import {APIService} from '@ohrm/core/util/services/api.service';
 import EditEmployeeLayout from '@/orangehrmPimPlugin/components/EditEmployeeLayout';
 import {OxdSwitchInput} from '@ohrm/oxd';
-import {required, shouldNotExceedCharLength} from '@ohrm/core/util/validation/rules';
+import {
+  required,
+  shouldNotExceedCharLength,
+} from '@ohrm/core/util/validation/rules';
 
 export default {
   name: 'EmployeeWorkingSchedule',
@@ -278,8 +351,12 @@ export default {
           this.pendingRequest = data.pendingRequest;
         })
         .catch((error) => {
+          /* eslint-disable-next-line no-console */
           console.error('Error fetching working schedule data:', error);
-          this.$toast.error(this.$t('working_schedule.fetch_error') || 'Failed to load working schedule.');
+          this.$toast.error(
+            this.$t('working_schedule.fetch_error') ||
+              'Failed to load working schedule.',
+          );
         })
         .finally(() => {
           this.isLoading = false;
@@ -296,12 +373,19 @@ export default {
           },
         })
         .then(() => {
-          this.$toast.success(this.$t('working_schedule.config_updated') || 'Configuration updated successfully.');
+          this.$toast.success(
+            this.$t('working_schedule.config_updated') ||
+              'Configuration updated successfully.',
+          );
           this.fetchData();
         })
         .catch((error) => {
+          /* eslint-disable-next-line no-console */
           console.error('Error updating configuration:', error);
-          this.$toast.error(this.$t('working_schedule.config_error') || 'Failed to update configuration.');
+          this.$toast.error(
+            this.$t('working_schedule.config_error') ||
+              'Failed to update configuration.',
+          );
           this.isCustomizable = !this.isCustomizable; // Revert change
         })
         .finally(() => {
@@ -315,19 +399,27 @@ export default {
           method: 'POST',
           url: `/api/v2/pim/employees/${this.empNumber}/working-schedule/request`,
           data: {
-            workShiftId: this.newRequest.workShiftId?.id || this.newRequest.workShiftId,
+            workShiftId:
+              this.newRequest.workShiftId?.id || this.newRequest.workShiftId,
             reason: this.newRequest.reason,
           },
         })
         .then(() => {
-          this.$toast.success(this.$t('working_schedule.request_submitted') || 'Schedule change request submitted.');
+          this.$toast.success(
+            this.$t('working_schedule.request_submitted') ||
+              'Schedule change request submitted.',
+          );
           this.newRequest.workShiftId = null;
           this.newRequest.reason = '';
           this.fetchData();
         })
         .catch((error) => {
+          /* eslint-disable-next-line no-console */
           console.error('Error submitting request:', error);
-          this.$toast.error(this.$t('working_schedule.submit_error') || 'Failed to submit request.');
+          this.$toast.error(
+            this.$t('working_schedule.submit_error') ||
+              'Failed to submit request.',
+          );
         })
         .finally(() => {
           this.isSubmitting = false;
@@ -345,15 +437,22 @@ export default {
           },
         })
         .then(() => {
-          const msg = status === 'approved' 
-            ? (this.$t('working_schedule.request_approved') || 'Request approved and work shift updated successfully.')
-            : (this.$t('working_schedule.request_rejected') || 'Request rejected successfully.');
+          const msg =
+            status === 'approved'
+              ? this.$t('working_schedule.request_approved') ||
+                'Request approved and work shift updated successfully.'
+              : this.$t('working_schedule.request_rejected') ||
+                'Request rejected successfully.';
           this.$toast.success(msg);
           this.fetchData();
         })
         .catch((error) => {
+          /* eslint-disable-next-line no-console */
           console.error('Error resolving request:', error);
-          this.$toast.error(this.$t('working_schedule.resolve_error') || 'Failed to process request.');
+          this.$toast.error(
+            this.$t('working_schedule.resolve_error') ||
+              'Failed to process request.',
+          );
         })
         .finally(() => {
           this.isSubmitting = false;
