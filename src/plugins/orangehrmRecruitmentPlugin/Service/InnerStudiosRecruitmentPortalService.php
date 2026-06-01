@@ -106,7 +106,17 @@ class InnerStudiosRecruitmentPortalService
     public function sendContractLink(int $candidateId): bool
     {
         $context = $this->getCandidateContext($candidateId);
-        if (empty($context) || !$this->hasContractTemplate()) {
+        if (empty($context)) {
+            return false;
+        }
+
+        $offer = $this->getConnection()->fetchAssociative(
+            'SELECT offer_type FROM ohrm_innerstudios_recruitment_offer WHERE candidate_id = :candidateId',
+            ['candidateId' => $candidateId]
+        );
+        $offerType = $offer ? $offer['offer_type'] : 'contratacao';
+
+        if ($offerType !== 'estagio' && !$this->hasContractTemplate()) {
             return false;
         }
 
@@ -118,17 +128,32 @@ class InnerStudiosRecruitmentPortalService
         );
         $url = $this->buildPublicUrl(self::TOKEN_TYPE_CONTRACT, $token);
 
+        if ($offerType === 'estagio') {
+            $subject = 'Acordo de Colaboração e Cedência de Direitos disponível para assinatura | INNER Studios';
+            $title = 'Acordo de Colaboração e Cedência de Direitos';
+            $message = sprintf(
+                "Olá %s,\n\nO teu acordo de colaboração e cedência de direitos já está pronto e disponível para assinatura digital!\n\n**Instruções para a assinatura:**\n1. Clica no botão abaixo para acederes ao portal do candidato.\n2. Completa a assinatura digital do acordo de forma segura.\n\nApós a assinatura do acordo por todas as partes, prosseguiremos com os passos de onboarding.",
+                (string)$context['first_name']
+            );
+            $buttonLabel = 'Assinar Acordo';
+        } else {
+            $subject = 'Contrato de Trabalho disponível para assinatura | INNER Studios';
+            $title = 'Contrato de Trabalho';
+            $message = sprintf(
+                "Olá %s,\n\nO teu contrato de trabalho já está pronto e disponível para assinatura!\n\n**Instruções para a assinatura:**\n1. Clica no botão abaixo para acederes ao portal do candidato.\n2. Descarrega a cópia do teu contrato em PDF.\n3. Assina o contrato (digitalmente com Chave Móvel Digital / Assinatura Digital Certificada ou imprimindo e assinando fisicamente).\n4. Faz o upload da versão assinada (em formato PDF ou imagem nítida) diretamente na mesma página.\n\nApós o envio do contrato assinado, faremos a validação interna.",
+                (string)$context['first_name']
+            );
+            $buttonLabel = 'Aceder ao Contrato';
+        }
+
         $this->sendOnce(
             'candidate:' . $candidateId . ':contract-link',
             (string)$context['email'],
-            'Contrato de Trabalho disponível para assinatura | INNER Studios',
+            $subject,
             $this->renderEmail(
-                'Contrato de Trabalho',
-                sprintf(
-                    "Olá %s,\n\nO teu contrato de trabalho já está pronto e disponível para assinatura!\n\n**Instruções para a assinatura:**\n1. Clica no botão abaixo para acederes ao portal do candidato.\n2. Descarrega a cópia do teu contrato em PDF.\n3. Assina o contrato (digitalmente com Chave Móvel Digital / Assinatura Digital Certificada ou imprimindo e assinando fisicamente).\n4. Faz o upload da versão assinada (em formato PDF ou imagem nítida) diretamente na mesma página.\n\nApós o envio do contrato assinado, faremos a validação interna.",
-                    (string)$context['first_name']
-                ),
-                'Aceder ao Contrato',
+                $title,
+                $message,
+                $buttonLabel,
                 $url
             )
         );
@@ -760,13 +785,27 @@ HTML;
 
         if (!$this->tableExists('ohrm_innerstudios_recruitment_offer')) {
             $connection->executeStatement(
-                'CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_offer (
+                "CREATE TABLE IF NOT EXISTS ohrm_innerstudios_recruitment_offer (
                     candidate_id INT NOT NULL PRIMARY KEY,
                     work_shift_id INT NULL,
                     worker_decides TINYINT(1) NOT NULL DEFAULT 0,
+                    offer_type VARCHAR(32) NOT NULL DEFAULT 'contratacao',
+                    offer_letter_status VARCHAR(32) NULL,
+                    offer_letter_submission_id INT NULL,
                     updated_at DATETIME NOT NULL
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8"
             );
+        } else {
+            try {
+                $connection->executeStatement(
+                    "ALTER TABLE ohrm_innerstudios_recruitment_offer 
+                     ADD COLUMN IF NOT EXISTS offer_type VARCHAR(32) NOT NULL DEFAULT 'contratacao',
+                     ADD COLUMN IF NOT EXISTS offer_letter_status VARCHAR(32) NULL,
+                     ADD COLUMN IF NOT EXISTS offer_letter_submission_id INT NULL"
+                );
+            } catch (\Exception $e) {
+                // Ignore errors if columns already exist
+            }
         }
     }
 

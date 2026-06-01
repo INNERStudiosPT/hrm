@@ -34,6 +34,7 @@ use OrangeHRM\Dashboard\Dto\ActionSummary\PendingLeaveRequestSummary;
 use OrangeHRM\Dashboard\Dto\ActionSummary\PendingSelfReviewSummary;
 use OrangeHRM\Dashboard\Dto\ActionSummary\PendingTimesheetSummary;
 use OrangeHRM\Dashboard\Dto\ActionSummary\ScheduledInterviewSummary;
+use OrangeHRM\Dashboard\Dto\ActionSummary\PendingOfferLetterSignatureSummary;
 use OrangeHRM\Dashboard\Traits\Service\EmployeeActionSummaryServiceTrait;
 use OrangeHRM\Dashboard\Traits\Service\ModuleServiceTrait;
 use OrangeHRM\Entity\Candidate;
@@ -97,6 +98,7 @@ class EmployeeActionSummaryAPI extends Endpoint implements ResourceEndpoint
         }
         if (in_array(self::RECRUITMENT_MODULE, $enabledModuleNames)) {
             $availableActionGroups[] = new ScheduledInterviewSummary($accessibleCandidateIds);
+            $availableActionGroups[] = new PendingOfferLetterSignatureSummary($empNumber);
         }
 
         $actionsSummary = [];

@@ -353,3 +353,8 @@ recruitment_rss_feed:
   path: /recruitmentApply/jobs.rss
   controller: OrangeHRM\Recruitment\Controller\PublicController\VacancyListRSSController::handle
   methods: [ GET ]
+
+innerstudios_recruitment_docuseal_webhook:
+  path: /api/v2/recruitment/docuseal/webhook
+  controller: OrangeHRM\Recruitment\Controller\DocusealWebhookController::handle
+  methods: [ POST ]

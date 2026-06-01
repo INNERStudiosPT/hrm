@@ -92,6 +92,15 @@ class CandidateJobOfferingAPI extends AbstractCandidateActionAPI
                 true
             )
         );
+        $paramRuleCollection->addParamValidation(
+            $this->getValidationDecorator()->notRequiredParamRule(
+                new ParamRule(
+                    'offerType',
+                    new Rule(Rules::STRING_TYPE)
+                ),
+                true
+            )
+        );
         return $paramRuleCollection;
     }
 
@@ -118,6 +127,10 @@ class CandidateJobOfferingAPI extends AbstractCandidateActionAPI
             RequestParams::PARAM_TYPE_BODY,
             self::PARAMETER_WORK_SHIFT_ID
         );
+        $offerType = $this->getRequestParams()->getStringOrNull(
+            RequestParams::PARAM_TYPE_BODY,
+            'offerType'
+        ) ?? 'contratacao';
 
         if (!$workerDecides && is_null($workShiftId)) {
             throw $this->getBadRequestException('Work shift is required');
@@ -129,6 +142,9 @@ class CandidateJobOfferingAPI extends AbstractCandidateActionAPI
                     candidate_id INT NOT NULL PRIMARY KEY,
                     work_shift_id INT NULL,
                     worker_decides TINYINT(1) NOT NULL DEFAULT 0,
+                    offer_type VARCHAR(32) NOT NULL DEFAULT \'contratacao\',
+                    offer_letter_status VARCHAR(32) NULL,
+                    offer_letter_submission_id INT NULL,
                     updated_at DATETIME NOT NULL
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
             );
@@ -136,20 +152,26 @@ class CandidateJobOfferingAPI extends AbstractCandidateActionAPI
 
         $this->getEntityManager()->getConnection()->executeStatement(
             'INSERT INTO ohrm_innerstudios_recruitment_offer
-                (candidate_id, work_shift_id, worker_decides, updated_at)
-             VALUES (:candidateId, :workShiftId, :workerDecides, NOW())
+                (candidate_id, work_shift_id, worker_decides, offer_type, updated_at)
+             VALUES (:candidateId, :workShiftId, :workerDecides, :offerType, NOW())
              ON DUPLICATE KEY UPDATE
                 work_shift_id = VALUES(work_shift_id),
                 worker_decides = VALUES(worker_decides),
+                offer_type = VALUES(offer_type),
                 updated_at = NOW()',
             [
                 'candidateId' => $candidateVacancy->getCandidate()->getId(),
                 'workShiftId' => $workerDecides ? null : $workShiftId,
                 'workerDecides' => $workerDecides ? 1 : 0,
+                'offerType' => $offerType,
             ]
         );
 
         $portalService = new \OrangeHRM\Recruitment\Service\InnerStudiosRecruitmentPortalService();
-        $portalService->sendWelcomeDetails($candidateVacancy);
+        if ($offerType === 'estagio') {
+            $portalService->sendContractLink($candidateVacancy->getCandidate()->getId());
+        } else {
+            $portalService->sendWelcomeDetails($candidateVacancy);
+        }
     }
 }

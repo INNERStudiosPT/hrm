@@ -327,6 +327,25 @@ class InnerStudiosCandidatePortalController extends AbstractController implement
             return $this->invalidLink();
         }
 
+        // Check offer type
+        $connection = $this->getPortalService()->getConnection();
+        $offer = $connection->fetchAssociative(
+            'SELECT offer_type FROM ohrm_innerstudios_recruitment_offer WHERE candidate_id = :candidateId',
+            ['candidateId' => (int)$context['candidate_id']]
+        );
+        $offerType = $offer ? $offer['offer_type'] : 'contratacao';
+
+        if ($offerType === 'estagio') {
+            return $this->html(
+                'Acordo para assinatura',
+                '<p>Para completares o teu processo de estágio, clica no botão abaixo para assinares digitalmente o teu Acordo de Colaboração e Cedência de Direitos no portal do Docuseal.</p>
+                 <div style="margin: 32px 0; text-align: center;">
+                   <a class="button" href="http://docuseal.innerstudios.pt/d/CcVpzFU2pgXR7z" target="_blank">Assinar Acordo no Docuseal</a>
+                 </div>
+                 <p class="notice">Após assinares o documento no Docuseal, o nosso sistema atualizará o teu progresso automaticamente.</p>'
+            );
+        }
+
         if ($request->query->get('download') === '1') {
             $template = $this->getPortalService()->getContractTemplate();
             if (!$template) {
