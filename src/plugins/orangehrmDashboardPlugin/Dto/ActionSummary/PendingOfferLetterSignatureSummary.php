@@ -20,10 +20,12 @@
 namespace OrangeHRM\Dashboard\Dto\ActionSummary;
 
 use OrangeHRM\Dashboard\Traits\Service\EmployeeActionSummaryServiceTrait;
+use OrangeHRM\Core\Traits\ORM\EntityManagerHelperTrait;
 
 class PendingOfferLetterSignatureSummary implements ActionSummary
 {
     use EmployeeActionSummaryServiceTrait;
+    use EntityManagerHelperTrait;
 
     /**
      * @var int
@@ -60,10 +62,7 @@ class PendingOfferLetterSignatureSummary implements ActionSummary
     public function getPendingActionCount(): int
     {
         try {
-            $connection = $this->getEmployeeActionSummaryService()
-                ->getEmployeeActionSummaryDao()
-                ->getEntityManager()
-                ->getConnection();
+            $connection = $this->getEntityManager()->getConnection();
 
             return (int)$connection->fetchOne(
                 "SELECT COUNT(DISTINCT o.candidate_id)

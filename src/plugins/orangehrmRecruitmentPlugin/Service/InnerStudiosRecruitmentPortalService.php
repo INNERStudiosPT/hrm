@@ -797,14 +797,19 @@ HTML;
             );
         } else {
             try {
-                $connection->executeStatement(
-                    "ALTER TABLE ohrm_innerstudios_recruitment_offer 
-                     ADD COLUMN IF NOT EXISTS offer_type VARCHAR(32) NOT NULL DEFAULT 'contratacao',
-                     ADD COLUMN IF NOT EXISTS offer_letter_status VARCHAR(32) NULL,
-                     ADD COLUMN IF NOT EXISTS offer_letter_submission_id INT NULL"
+                $columnExists = $connection->fetchOne(
+                    "SHOW COLUMNS FROM ohrm_innerstudios_recruitment_offer LIKE 'offer_type'"
                 );
+                if (!$columnExists) {
+                    $connection->executeStatement(
+                        "ALTER TABLE ohrm_innerstudios_recruitment_offer 
+                         ADD COLUMN offer_type VARCHAR(32) NOT NULL DEFAULT 'contratacao',
+                         ADD COLUMN offer_letter_status VARCHAR(32) NULL,
+                         ADD COLUMN offer_letter_submission_id INT NULL"
+                    );
+                }
             } catch (\Exception $e) {
-                // Ignore errors if columns already exist
+                // Ignore errors
             }
         }
     }
