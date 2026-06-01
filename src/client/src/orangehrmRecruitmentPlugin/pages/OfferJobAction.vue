@@ -56,11 +56,31 @@
               type="textarea"
             />
           </oxd-grid-item>
-          <oxd-grid-item v-if="offerType && offerType.id === 'contratacao'" class="--span-column-3">
-            <div style="margin-top: 10px; padding: 12px; background-color: rgba(255, 123, 26, 0.08); border: 1px solid rgba(255, 123, 26, 0.2); border-radius: 6px;">
-              <p style="margin: 0; font-size: 13px;">
+          <oxd-grid-item
+            v-if="offerType && offerType.id === 'contratacao'"
+            class="--span-column-3"
+          >
+            <div
+              style="
+                margin-top: 10px;
+                padding: 12px;
+                background-color: rgba(255, 123, 26, 0.08);
+                border: 1px solid rgba(255, 123, 26, 0.2);
+                border-radius: 6px;
+              "
+            >
+              <p style="margin: 0; font-size: 13px">
                 Link da Carta Oferta para preenchimento:
-                <a href="http://docuseal.innerstudios.pt/d/st9HByMuczKDyG" target="_blank" style="color: #ff7b1a; font-weight: bold; text-decoration: underline; margin-left: 4px;">
+                <a
+                  href="http://docuseal.innerstudios.pt/d/st9HByMuczKDyG"
+                  target="_blank"
+                  style="
+                    color: #ff7b1a;
+                    font-weight: bold;
+                    text-decoration: underline;
+                    margin-left: 4px;
+                  "
+                >
                   http://docuseal.innerstudios.pt/d/st9HByMuczKDyG
                 </a>
               </p>
@@ -122,10 +142,10 @@ export default {
       isLoading: false,
       note: null,
       workShift: null,
-      offerType: { id: 'contratacao', label: 'Contratação' },
+      offerType: {id: 'contratacao', label: 'Contratação'},
       offerTypeOptions: [
-        { id: 'contratacao', label: 'Contratação' },
-        { id: 'estagio', label: 'Estágio' },
+        {id: 'contratacao', label: 'Contratação'},
+        {id: 'estagio', label: 'Estágio'},
       ],
       workShiftOptions: [
         {
