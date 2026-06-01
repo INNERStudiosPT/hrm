@@ -336,14 +336,7 @@ class InnerStudiosCandidatePortalController extends AbstractController implement
         $offerType = $offer ? $offer['offer_type'] : 'contratacao';
 
         if ($offerType === 'estagio') {
-            return $this->html(
-                'Acordo para assinatura',
-                '<p>Para completares o teu processo de estágio, clica no botão abaixo para assinares digitalmente o teu Acordo de Colaboração e Cedência de Direitos no portal do Docuseal.</p>
-                 <div style="margin: 32px 0; text-align: center;">
-                   <a class="button" href="http://docuseal.innerstudios.pt/d/CcVpzFU2pgXR7z" target="_blank">Assinar Acordo no Docuseal</a>
-                 </div>
-                 <p class="notice">Após assinares o documento no Docuseal, o nosso sistema atualizará o teu progresso automaticamente.</p>'
-            );
+            return new \OrangeHRM\Framework\Http\RedirectResponse('http://docuseal.innerstudios.pt/d/CcVpzFU2pgXR7z');
         }
 
         if ($request->query->get('download') === '1') {
