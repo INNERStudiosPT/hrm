@@ -13,3 +13,8 @@ coverage/
 src/plugins/orangehrmFunctionalTestingPlugin
 .php-cs-fixer.cache
 .php-cs-fixer.php
+
+# Environment files
+.env
+.env.*
+!.env.example
